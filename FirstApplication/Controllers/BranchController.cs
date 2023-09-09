@@ -4,10 +4,12 @@ using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.BranchModels;
+using BookShop.Models.OrderModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace BookShop.Controllers
 {
@@ -29,14 +31,25 @@ namespace BookShop.Controllers
         {
             try
             {
-                var Branches = await _context.Branches
+                var x = 0m;
+                var y = 0m;
+                var Branches = await _context.Branches.Include(i=>i.Orders).Include(i=>i.BranchPayments)
                     .Select(i => new BranchRModel
                     {
                         Id = i.Id,
                         BranchAddress = i.BranchAddress,
                         BranchName = i.BranchName,
                         PhoneNumber = i.PhoneNumber,
-
+                        TotalAmount = i.Orders.Sum(i=>((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
+                        TotalPayment = i.BranchPayments.Sum(i=>i.Amount),
+                        RemainingPayment = i.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - i.BranchPayments.Sum(i => i.Amount),
+                        Orders = i.Orders.Select(i=>new OrderRModel
+                        {
+                            Id = i.Id,
+                            BranchId = i.BranchId,
+                            BookCount = i.BookCount,
+                            BookVersionId = i.BookVersionId,
+                        }).ToList(),
                     }).ToListAsync();
 
                 return Ok(Branches);
@@ -53,13 +66,25 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Branches.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Branch With this id :{id} Not Found!.");
+                var data = await _context.Branches.Include(i => i.Orders).Include(i => i.BranchPayments).FirstOrDefaultAsync(i => i.Id == id) 
+                    ?? throw new Exception($"Branch With this id :{id} Not Found!.");
+
                 var branch = new BranchRModel
                 {
                     Id = data.Id,
                     BranchAddress= data.BranchAddress,
                     BranchName = data.BranchName,
                     PhoneNumber = data.PhoneNumber,
+                    TotalAmount = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
+                    TotalPayment = data.BranchPayments.Sum(i => i.Amount),
+                    RemainingPayment = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - data.BranchPayments.Sum(i => i.Amount),
+                    Orders = data.Orders.Select(i => new OrderRModel
+                    {
+                        Id = i.Id,
+                        BranchId = i.BranchId,
+                        BookCount = i.BookCount,
+                        BookVersionId = i.BookVersionId,
+                    }).ToList(),
                 };
                 return Ok(branch);
             }

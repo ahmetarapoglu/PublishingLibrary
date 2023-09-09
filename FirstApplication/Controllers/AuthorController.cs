@@ -4,12 +4,10 @@ using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.BookVersionModels;
-using BookShop.Models.CategoryModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static System.Reflection.Metadata.BlobBuilder;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
 {
@@ -31,48 +29,54 @@ namespace BookShop.Controllers
         {
             try
             {
+                var x = 0m;
+                var y = 0m;
+
                 var Authors = await _context.Authors
-                    .Include(i=>i.AuthorAddress)
-                    .Include(i=>i.AuthorBiography)
-                    .Include(i=>i.BookAuthors)
+                    .Include(i => i.AuthorAddress)
+                    .Include(i => i.AuthorBiography)
+                    .Include(i => i.BookAuthors)
+                    .Include(i => i.AuthorPayments)
                     .Select(i => new AuthorRModel
-                {
-                    Id = i.Id,
-                    NameSurname = i.NameSurname,
-                    TotalPayment = i.TotalPayment,
-                    AuthorAddress = new AuthorAddressModel
                     {
-                        Country = i.AuthorAddress.Country,
-                        City = i.AuthorAddress.City,
-                        PostCode = i.AuthorAddress.PostCode,
-                    },
-                    AuthorBiography = new AuthorBiographyModel
-                    {
-                        Email = i.AuthorBiography.Email,
-                        PhoneNumber = i.AuthorBiography.PhoneNumber,
-                        NativeLanguage = i.AuthorBiography.NativeLanguage,
-                        Education = i.AuthorBiography.Education
-                    },
-                    Books = i.BookAuthors.Select(i=> new BookInAuthors
-                    {
-                        Id=i.Book.Id,
-                        Title = i.Book.Title,
-                        Description = i.Book.Description,
-                        PublishedDate = i.Book.PublishedDate,
-                        CategoryName = i.Book.Category.CategoryName,
-                        BookVersions = i.Book.BookVersions.Select(i=>
-                        new BookVersionRModel
+                        Id = i.Id,
+                        NameSurname = i.NameSurname,
+                        TotalAmount  = 0,
+                        TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
+                        RemainingPayment = x - y,
+                        AuthorAddress = new AuthorAddressModel
                         {
-                            Id = i.Id,
-                            Number = i.Number,
-                            BookCount = i.BookCount,
-                            CostPrice = i.CostPrice,
-                            TotalCostPrice = i.CostPrice  * i.BookCount,
-                            SellPrice = i.SellPrice,
-                            TotalSellPrice = i.SellPrice * i.BookCount,
-                            LibraryRatio = i.LibraryRatio,
-                        }).ToList()
-                    }).ToList(),
+                            Country = i.AuthorAddress.Country,
+                            City = i.AuthorAddress.City,
+                            PostCode = i.AuthorAddress.PostCode,
+                        },
+                        AuthorBiography = new AuthorBiographyModel
+                        {
+                            Email = i.AuthorBiography.Email,
+                            PhoneNumber = i.AuthorBiography.PhoneNumber,
+                            NativeLanguage = i.AuthorBiography.NativeLanguage,
+                            Education = i.AuthorBiography.Education
+                        },
+                        Books = i.BookAuthors.Select(i => new BookInAuthors
+                        {
+                            Id = i.Book.Id,
+                            Title = i.Book.Title,
+                            Description = i.Book.Description,
+                            PublishedDate = i.Book.PublishedDate,
+                            CategoryName = i.Book.Category.CategoryName,
+                            BookVersions = i.Book.BookVersions.Select(i =>
+                            new BookVersionRModel
+                            {
+                                Id = i.Id,
+                                Number = i.Number,
+                                BookCount = i.BookCount,
+                                CostPrice = i.CostPrice,
+                                TotalCostPrice = i.CostPrice * i.BookCount,
+                                SellPrice = i.SellPrice,
+                                TotalSellPrice = i.SellPrice * i.BookCount,
+                                LibraryRatio = i.LibraryRatio,
+                            }).ToList()
+                        }).ToList(),
 
                     }).ToListAsync();
 
@@ -94,18 +98,26 @@ namespace BookShop.Controllers
                     .Include(i => i.AuthorAddress)
                     .Include(i => i.AuthorBiography)
                     .Include(i => i.BookAuthors)
-                    .ThenInclude(i=>i.Book)
-                    .ThenInclude(i=>i.BookVersions)
+                    .ThenInclude(i => i.Book)
+                    .ThenInclude(i => i.BookVersions)
+                    .ThenInclude(i => i.Orders)
                     .Include(i => i.BookAuthors)
-                    .ThenInclude(i=>i.Book)
-                    .ThenInclude(i=>i.Category)
+                    .ThenInclude(i => i.Book)
+                    .ThenInclude(i => i.Category)
+                    .Include(i => i.AuthorPayments)
                     .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Author With this id :{id} Not Found!.");
 
+                var order = await _context.Orders.Include(i => i.BookVersion).Select(i => i.Id).ToListAsync();
+
+                var x = 0m;
+                var y = 0m;
                 var author = new AuthorRModel
                 {
                     Id = data.Id,
-                    NameSurname =data.NameSurname,
-                    TotalPayment = data.TotalPayment,
+                    NameSurname = data.NameSurname,
+                    TotalAmount = x = data.AuthorPayments.Sum(i => i.Amount),
+                    TotalPayment = y = data.AuthorPayments.Sum(i => i.Amount),
+                    RemainingPayment = x - y,
                     AuthorAddress = new AuthorAddressModel
                     {
                         Country = data.AuthorAddress.Country,
@@ -185,7 +197,6 @@ namespace BookShop.Controllers
                     throw new Exception("Requested Author Not Found!.");
                 }
                 author.NameSurname = model.NameSurname;
-                author.TotalPayment = model.TotalPayment;
                 author.AuthorAddress = new AuthorAddress
                 {
                     Country = model.AuthorAddress.Country,

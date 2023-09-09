@@ -9,7 +9,6 @@ namespace BookShop.Models.AuthorModels
     {
         public int Id { get; set; }
         public string NameSurname { get; set; }
-        public decimal TotalPayment { get; set; }
         public AuthorAddressModel AuthorAddress { get; set; }
         public AuthorBiographyModel AuthorBiography { get; set; }
 
@@ -18,7 +17,6 @@ namespace BookShop.Models.AuthorModels
         {
             Id = model.Id,
             NameSurname = model.NameSurname,
-            TotalPayment = model.TotalPayment,
             AuthorAddress = new AuthorAddress
             {
                 Country = model.AuthorAddress.Country,

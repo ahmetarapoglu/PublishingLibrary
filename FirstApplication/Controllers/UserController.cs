@@ -55,8 +55,8 @@ namespace BookShop.Controllers
         //    return Ok(response);
         //}
 
-        [HttpGet("GetAllUsers")]
-        public async Task<IActionResult> GetAllUsers()
+        [HttpGet("GetUsers")]
+        public async Task<IActionResult> GetUsers()
         {
             try
             {

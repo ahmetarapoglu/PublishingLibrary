@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ihab\\Desktop\\BackEnd\\FirstApplication\\FirstApplication\\BookShop.csproj": {}
+    "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\BookShop.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ihab\\Desktop\\BackEnd\\FirstApplication\\FirstApplication\\BookShop.csproj": {
+    "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\BookShop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ihab\\Desktop\\BackEnd\\FirstApplication\\FirstApplication\\BookShop.csproj",
+        "projectUniqueName": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\BookShop.csproj",
         "projectName": "BookShop",
-        "projectPath": "C:\\Users\\ihab\\Desktop\\BackEnd\\FirstApplication\\FirstApplication\\BookShop.csproj",
+        "projectPath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\BookShop.csproj",
         "packagesPath": "C:\\Users\\ihab\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ihab\\Desktop\\BackEnd\\FirstApplication\\FirstApplication\\obj\\",
+        "outputPath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\ihab\\AppData\\Roaming\\NuGet\\NuGet.Config",

@@ -4,7 +4,6 @@
     {
         public int Id { get; set; }
         public string NameSurname { get; set; }
-        public decimal TotalPayment { get; set; }
         
         public AuthorAddress AuthorAddress { get; set; }
         public AuthorBiography AuthorBiography { get; set; }
