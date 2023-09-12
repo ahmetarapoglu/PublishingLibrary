@@ -49,6 +49,7 @@ namespace BookShop.Controllers
                             BranchId = i.BranchId,
                             BookCount = i.BookCount,
                             BookVersionId = i.BookVersionId,
+                            Total = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount
                         }).ToList(),
                     }).ToListAsync();
 
@@ -66,7 +67,7 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Branches.Include(i => i.Orders).Include(i => i.BranchPayments).FirstOrDefaultAsync(i => i.Id == id) 
+                var data = await _context.Branches.Include(i => i.Orders).ThenInclude(i=>i.BookVersion).Include(i => i.BranchPayments).FirstOrDefaultAsync(i => i.Id == id) 
                     ?? throw new Exception($"Branch With this id :{id} Not Found!.");
 
                 var branch = new BranchRModel
@@ -84,6 +85,7 @@ namespace BookShop.Controllers
                         BranchId = i.BranchId,
                         BookCount = i.BookCount,
                         BookVersionId = i.BookVersionId,
+                        Total = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount
                     }).ToList(),
                 };
                 return Ok(branch);

@@ -35,14 +35,18 @@ namespace BookShop.Controllers
                 var Authors = await _context.Authors
                     .Include(i => i.AuthorAddress)
                     .Include(i => i.AuthorBiography)
-                    .Include(i => i.BookAuthors)
                     .Include(i => i.AuthorPayments)
+                    .Include(i => i.BookAuthors)
+                    .ThenInclude(i=>i.Book)
+                    .ThenInclude(i=>i.BookVersions)
+                    .ThenInclude(i=>i.Orders)
+                  
                     .Select(i => new AuthorRModel
                     {
                         Id = i.Id,
                         NameSurname = i.NameSurname,
                         TotalAmount  = 0,
-                        TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
+                        TotalPayment =  i.AuthorPayments.Sum(i => i.Amount),
                         RemainingPayment = x - y,
                         AuthorAddress = new AuthorAddressModel
                         {
@@ -77,8 +81,8 @@ namespace BookShop.Controllers
                                 LibraryRatio = i.LibraryRatio,
                             }).ToList()
                         }).ToList(),
-
                     }).ToListAsync();
+
 
                 return Ok(Authors);
             }

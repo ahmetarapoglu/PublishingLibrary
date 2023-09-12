@@ -34,6 +34,8 @@ namespace BookShop.Controllers
                   BranchId = i.BranchId,
                   BookVersionId = i.BookVersionId,
                   BookCount = i.BookCount,
+                  Total = i.BookVersion.SellPrice  * i.BookCount,
+                  profitTotal = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount,
                 }).ToListAsync();
 
                 return Ok(orders);
@@ -59,6 +61,8 @@ namespace BookShop.Controllers
                     BranchId = data.BranchId,
                     BookVersionId = data.BookVersionId,
                     BookCount = data.BookCount,
+                    Total = data.BookVersion.SellPrice  * data.BookCount,
+                    profitTotal = (data.BookVersion.SellPrice - data.BookVersion.CostPrice) * data.BookCount,
                 };
                 return Ok(order);
             }

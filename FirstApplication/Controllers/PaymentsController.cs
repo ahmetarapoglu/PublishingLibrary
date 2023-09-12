@@ -56,5 +56,44 @@ namespace BookShop.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("Account")]
+        public async Task<IActionResult> Account()
+        {
+            try
+            {
+                var totalBooksSell = _context.Orders.Sum(i=>i.BookVersion.SellPrice * i.BookCount);
+                var totalBooksCost = _context.Orders.Sum(i=>i.BookVersion.CostPrice * i.BookCount);
+
+                var profitTotal = totalBooksSell - totalBooksCost;
+
+                var LibProfitTotal = _context.Orders.Sum(i =>  (((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount) * i.BookVersion.LibraryRatio) / 100);
+                var AuthorProfitTotal = profitTotal - LibProfitTotal;
+
+                var totalAuthorPayments = _context.AuthorPayments.Sum(i => i.Amount);
+                var remainingAuthorsPayments = AuthorProfitTotal - totalAuthorPayments;
+
+                var totalBranchPayments = _context.BranchPayments.Sum(i => i.Amount);
+                var remainingBranchesPayments = totalBooksSell - totalBranchPayments;
+
+                return Ok(new
+                {
+                    totalBooksCost,
+                    totalBooksSell,
+                    profitTotal,
+                    LibProfitTotal,
+                    AuthorProfitTotal,
+                    totalAuthorPayments,
+                    remainingAuthorsPayments,
+                    totalBranchPayments,
+                    remainingBranchesPayments
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

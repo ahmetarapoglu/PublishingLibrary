@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookShop.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230903195445_update_01")]
-    partial class update_01
+    [Migration("20230912203452_addDataBase")]
+    partial class addDataBase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,9 +37,6 @@ namespace BookShop.Migrations
                     b.Property<string>("NameSurname")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("TotalPayment")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
