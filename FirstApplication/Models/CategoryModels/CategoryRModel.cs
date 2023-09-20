@@ -2,10 +2,8 @@
 
 namespace BookShop.Models.CategoryModels
 {
-    public class CategoryRModel
+    public class CategoryRModel : CategoryModel
     {
         public int Id { get; set; }
-        public string CategoryName { get; set; }
-
     }
 }

@@ -4,10 +4,12 @@ using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.BookVersionModels;
+using BookShop.Models.RequestModels;
+using BookShop.Validations.ReqValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System;
 
 namespace BookShop.Controllers
 {
@@ -23,30 +25,42 @@ namespace BookShop.Controllers
         }
 
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetAuthors")]
-        public async Task<IActionResult> GetAuthors()
+        public async Task<IActionResult> GetAuthors(AuthorRequest model)
         {
+            var dtrValidation = new DataTableReqValidation();
+            var validationResult = dtrValidation.Validate(model);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    throw new Exception($"Error: {error.ErrorMessage}");
+                }
+            }
+
             try
             {
                 var x = 0m;
                 var y = 0m;
 
-                var Authors = await _context.Authors
+                var authors = await _context.Authors
                     .Include(i => i.AuthorAddress)
                     .Include(i => i.AuthorBiography)
                     .Include(i => i.AuthorPayments)
                     .Include(i => i.BookAuthors)
-                    .ThenInclude(i=>i.Book)
-                    .ThenInclude(i=>i.BookVersions)
-                    .ThenInclude(i=>i.Orders)
-                  
+                    .ThenInclude(i => i.Book)
+                    .ThenInclude(i => i.BookVersions)
+                    .ThenInclude(i => i.Orders)
+                    .Where(i => i.NameSurname.Contains(model.Search))
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .Select(i => new AuthorRModel
                     {
                         Id = i.Id,
                         NameSurname = i.NameSurname,
-                        TotalAmount  = 0,
-                        TotalPayment =  i.AuthorPayments.Sum(i => i.Amount),
+                        TotalAmount = 0,
+                        TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
                         RemainingPayment = x - y,
                         AuthorAddress = new AuthorAddressModel
                         {
@@ -84,7 +98,7 @@ namespace BookShop.Controllers
                     }).ToListAsync();
 
 
-                return Ok(Authors);
+                return Ok(new { Total = authors.Count, authors });
             }
             catch (Exception ex)
             {
@@ -167,11 +181,11 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("CreateAuthor")]
-        public async Task<IActionResult> CreateAuthor(AuthorCUModel model)
+        public async Task<IActionResult> CreateAuthor(AuthorCModel model)
         {
             try
             {
-                _context.Add(AuthorCUModel.Fill(model));
+                _context.Add(AuthorCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Author Created Successfly!.");
             }
@@ -183,7 +197,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [Route("UpdateAuthor")]
-        public async Task<IActionResult> UpdateAuthor(AuthorCUModel model)
+        public async Task<IActionResult> UpdateAuthor(AuthorUModel model)
         {
             try
             {

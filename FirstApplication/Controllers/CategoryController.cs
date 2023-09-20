@@ -60,11 +60,11 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("CreateCategory")]
-        public async Task<IActionResult> CreateCategory(CategoryCUModel model)
+        public async Task<IActionResult> CreateCategory(CategoryCModel model)
         {
             try
             {
-                _context.Add(CategoryCUModel.Fill(model));
+                _context.Add(CategoryCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Category Created Successfly!.");
             }
@@ -76,7 +76,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [Route("UpdateCategory")]
-        public async Task<IActionResult> UpdateCategory(CategoryCUModel model)
+        public async Task<IActionResult> UpdateCategory(CategoryUModel model)
         {
             try
             {

@@ -98,11 +98,11 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("CreateBranch")]
-        public async Task<IActionResult> CreateBranch(BranchCUModel model)
+        public async Task<IActionResult> CreateBranch(BranchCModel model)
         {
             try
             {
-                _context.Add(BranchCUModel.Fill(model));
+                _context.Add(BranchCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Branch Created Successfly!.");
             }
@@ -114,7 +114,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [Route("UpdateBranch")]
-        public async Task<IActionResult> UpdateBranch(BranchCUModel model)
+        public async Task<IActionResult> UpdateBranch(BranchUModel model)
         {
             try
             {

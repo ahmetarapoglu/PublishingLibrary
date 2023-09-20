@@ -2,7 +2,7 @@
 using BookShop.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using static BookShop.Abstract.Global;
+using static BookShop.Services.Global;
 
 namespace BookShop.Seed
 {

@@ -5,6 +5,8 @@ using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.BookModels;
 using BookShop.Models.BookVersionModels;
+using BookShop.Models.RequestModels;
+using BookShop.Validations.ReqValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,16 +26,30 @@ namespace BookShop.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetBooks")]
-        public async Task<IActionResult> GetBooks()
+        public async Task<IActionResult> GetBooks(BookRequest model)
         {
+
+            var dtrValidation = new DataTableReqValidation();
+            var validationResult = dtrValidation.Validate(model);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    throw new Exception($"Error: {error.ErrorMessage}");
+                }
+            }
+
             try
             {
-                var Books = await _context.Books
+                var books = await _context.Books
                     .Include(i => i.Category)
                     .Include(i=>i.BookAuthors)
                     .Include(i=>i.BookVersions)
+                    .Where(i => i.Title.Contains(model.Search))
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .Select(i => new BookRModel
                     {
                         Id = i.Id,
@@ -62,7 +78,7 @@ namespace BookShop.Controllers
 
                     }).ToListAsync();
 
-                return Ok(Books);
+                return Ok(new { Total = books.Count(), books });
             }
             catch (Exception ex)
             {
@@ -118,11 +134,11 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("CreateBook")]
-        public async Task<IActionResult> CreateBook(BookCUModel model)
+        public async Task<IActionResult> CreateBook(BookCModel model)
         {
             try
             {
-                _context.Add(BookCUModel.Fill(model));
+                _context.Add(BookCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Book Created Successfly!.");
             }
@@ -167,7 +183,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [Route("UpdateBook")]
-        public async Task<IActionResult> UpdateBook(BookCUModel model)
+        public async Task<IActionResult> UpdateBook(BookUModel model)
         {
             try
             {

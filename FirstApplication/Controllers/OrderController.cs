@@ -74,11 +74,11 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("CreateOrder")]
-        public async Task<IActionResult> CreateOrder(OrderCUModel model)
+        public async Task<IActionResult> CreateOrder(OrderCModel model)
         {
             try
             {
-                _context.Add(OrderCUModel.Fill(model));
+                _context.Add(OrderCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Order Created Successfly!.");
             }
@@ -90,7 +90,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [Route("UpdateOrder")]
-        public async Task<IActionResult> UpdateOrder(OrderCUModel model)
+        public async Task<IActionResult> UpdateOrder(OrderUModel model)
         {
             try
             {
