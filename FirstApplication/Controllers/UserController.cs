@@ -2,6 +2,7 @@
 using BookShop.Abstract;
 using BookShop.Db;
 using BookShop.Entities;
+using BookShop.Models.RequestModels;
 using BookShop.Models.UserModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -55,18 +56,22 @@ namespace BookShop.Controllers
         //    return Ok(response);
         //}
 
-        [HttpGet("GetUsers")]
-        public async Task<IActionResult> GetUsers()
+        [HttpPost("GetUsers")]
+        public async Task<IActionResult> GetUsers(UserRequest model)
         {
             try
             {
-                var users = await _context.Users.Select(i => new UserModel
+                var users = await _context.Users
+                    .Where(i => i.UserName.Contains(model.Search))
+                    .Skip(model.Skip)
+                    .Take(model.Take)
+                    .Select(i => new UserModel
                 {
                     Id = i.Id,
                     UserName = i.UserName,
                     Email = i.Email
                 }).ToListAsync();
-                return Ok(users);
+                return Ok(new { users.Count, users });
             }
             catch (Exception ex)
             {

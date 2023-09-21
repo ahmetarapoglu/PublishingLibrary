@@ -5,6 +5,7 @@ using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.BranchModels;
 using BookShop.Models.OrderModels;
+using BookShop.Models.RequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,15 +26,18 @@ namespace BookShop.Controllers
         }
 
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetBranches")]
-        public async Task<IActionResult> GetBranches()
+        public async Task<IActionResult> GetBranches(BranchRequest model)
         {
             try
             {
                 var x = 0m;
                 var y = 0m;
                 var Branches = await _context.Branches.Include(i=>i.Orders).Include(i=>i.BranchPayments)
+                    .Where(i => i.BranchName.Contains(model.Search))
+                    .Skip(model.Skip)
+                    .Take(model.Take)
                     .Select(i => new BranchRModel
                     {
                         Id = i.Id,
@@ -53,7 +57,7 @@ namespace BookShop.Controllers
                         }).ToList(),
                     }).ToListAsync();
 
-                return Ok(Branches);
+                return Ok(new { Branches.Count, Branches });
             }
             catch (Exception ex)
             {

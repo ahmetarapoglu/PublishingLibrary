@@ -4,6 +4,7 @@ using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.OrderModels;
+using BookShop.Models.RequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +23,17 @@ namespace BookShop.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetOrders")]
-        public async Task<IActionResult> GetOrders()
+        public async Task<IActionResult> GetOrders(OrderRequest model)
         {
             try
             {
-                var orders = await _context.Orders.Select(i => new OrderRModel
+                var orders = await _context.Orders
+                    .Where(i => i.Branch.BranchName.Contains(model.Search))
+                    .Skip(model.Skip)
+                    .Take(model.Take)
+                    .Select(i => new OrderRModel
                 {
                   Id = i.Id,
                   BranchId = i.BranchId,
@@ -38,7 +43,7 @@ namespace BookShop.Controllers
                   profitTotal = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount,
                 }).ToListAsync();
 
-                return Ok(orders);
+                return Ok(new { orders.Count, orders });
             }
             catch (Exception ex)
             {

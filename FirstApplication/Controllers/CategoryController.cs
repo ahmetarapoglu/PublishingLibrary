@@ -1,6 +1,7 @@
 ﻿using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.CategoryModels;
+using BookShop.Models.RequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,19 +20,23 @@ namespace BookShop.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpPost]
         [Route("GetCategories")]
-        public async Task<IActionResult> GetCategories()
+        public async Task<IActionResult> GetCategories(CategoryRequest model)
         {
             try
             {
-                var categories =await _context.Categories.Select(i=>new CategoryRModel
+                var categories =await _context.Categories
+                    .Where(i => i.CategoryName.Contains(model.Search))
+                    .Skip(model.Skip)
+                    .Take(model.Take)
+                    .Select(i=>new CategoryRModel
                 {
                     Id = i.Id,  
                     CategoryName = i.CategoryName,
                 }).ToListAsync();
 
-                return Ok(categories);
+                return Ok(new { categories.Count , categories });
             }
             catch (Exception ex)
             {
