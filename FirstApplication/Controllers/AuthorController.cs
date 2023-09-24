@@ -29,21 +29,18 @@ namespace BookShop.Controllers
         [Route("GetAuthors")]
         public async Task<IActionResult> GetAuthors(AuthorRequest model)
         {
-            var dtrValidation = new DataTableReqValidation();
-            var validationResult = dtrValidation.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    throw new Exception($"Error: {error.ErrorMessage}");
-                }
-            }
+            //var dtrValidation = new DataTableReqValidation();
+            //var validationResult = dtrValidation.Validate(model);
+            //if (!validationResult.IsValid)
+            //{
+            //    foreach (var error in validationResult.Errors)
+            //    {
+            //        throw new Exception($"Error: {error.ErrorMessage}");
+            //    }
+            //}
 
             try
             {
-                var x = 0m;
-                var y = 0m;
-
                 var authors = await _context.Authors
                     .Include(i => i.AuthorAddress)
                     .Include(i => i.AuthorBiography)
@@ -61,7 +58,7 @@ namespace BookShop.Controllers
                         NameSurname = i.NameSurname,
                         TotalAmount = 0,
                         TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
-                        RemainingPayment = x - y,
+                        RemainingPayment = 0,
                         AuthorAddress = new AuthorAddressModel
                         {
                             Country = i.AuthorAddress.Country,
@@ -185,6 +182,11 @@ namespace BookShop.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 _context.Add(AuthorCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Author Created Successfly!.");
@@ -213,6 +215,10 @@ namespace BookShop.Controllers
                 if (author == null)
                 {
                     throw new Exception("Requested Author Not Found!.");
+                }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
                 }
                 author.NameSurname = model.NameSurname;
                 author.AuthorAddress = new AuthorAddress

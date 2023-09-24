@@ -1,12 +1,12 @@
 ﻿using BookShop.Entities;
-using BookShop.Models.AuthorModels;
-using BookShop.Models.BookVersionModels;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.ComponentModel.DataAnnotations;
+using Xunit.Abstractions;
 
 namespace BookShop.Models.BookModels
 {
     public class BookCModel : BookModel
     {
+        [Required(ErrorMessage = "CategoryId is required")]
         public int CategoryId { get; set; }
         public static Func<BookCModel, Book> Fill => model =>
             new Book
@@ -15,7 +15,7 @@ namespace BookShop.Models.BookModels
                 Description = model.Description,
                 PublishedDate = model.PublishedDate,
                 CategoryId = model.CategoryId,
-                BookAuthors = model.BookAuthors.Select(i=>new BookAuthor
+                BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                 {
                     AuthorId = i.AuthorId,
                     AuhorRatio = i.AuhorRatio,

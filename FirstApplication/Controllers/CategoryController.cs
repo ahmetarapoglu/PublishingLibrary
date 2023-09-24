@@ -69,6 +69,12 @@ namespace BookShop.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+
                 _context.Add(CategoryCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Category Created Successfly!.");
@@ -93,6 +99,10 @@ namespace BookShop.Controllers
                 if(category == null)
                 {
                      throw new Exception("Requested Category Not Found!.");
+                }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
                 }
                 category.CategoryName = model.CategoryName;
                 _context.SaveChanges();

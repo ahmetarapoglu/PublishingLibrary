@@ -1,4 +1,6 @@
-﻿namespace BookShop.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BookShop.Entities
 {
     public class Author
     {

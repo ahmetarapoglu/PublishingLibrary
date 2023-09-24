@@ -6,10 +6,6 @@ namespace BookShop.Models.AuthorModels
 {
     public class AuthorCModel : AuthorModel
     {
-        public string NameSurname { get; set; }
-        public AuthorAddressModel AuthorAddress { get; set; }
-        public AuthorBiographyModel AuthorBiography { get; set; }
-
         public static Func<AuthorCModel, Author> Fill => model =>
         new Author
         {

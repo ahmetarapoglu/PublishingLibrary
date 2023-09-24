@@ -106,6 +106,11 @@ namespace BookShop.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 _context.Add(BranchCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Branch Created Successfly!.");
@@ -133,7 +138,12 @@ namespace BookShop.Controllers
                     throw new Exception("Requested Branch Not Found!.");
                 }
 
-                 branch.BranchName = model.BranchName;
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                branch.BranchName = model.BranchName;
                  branch.BranchAddress = model.BranchAddress;
                  branch.PhoneNumber = model.PhoneNumber;
 

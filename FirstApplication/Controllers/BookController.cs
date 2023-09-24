@@ -138,6 +138,10 @@ namespace BookShop.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 _context.Add(BookCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Book Created Successfly!.");
@@ -190,6 +194,10 @@ namespace BookShop.Controllers
                 if (model.Id == 0 || model.Id == null)
                 {
                     throw new Exception("Reauested Book Not Found!.");
+                }
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
                 }
                 var book = await _context.Books
                     .Include(i => i.Category)

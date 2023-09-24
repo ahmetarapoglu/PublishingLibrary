@@ -26,6 +26,7 @@ builder.Services.AddIdentity<User, Role>(c =>
     .AddUserManager<UserManager<User>>()
     .AddSignInManager<SignInManager<User>>();
 
+
 // 3. Adding Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -57,6 +58,9 @@ builder.Services.AddControllers();
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+
+//builder.Services.AddControllers()
+//        .AddDataAnnotationsLocalization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
