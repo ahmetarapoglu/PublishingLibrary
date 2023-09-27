@@ -33,8 +33,7 @@ namespace BookShop.Migrations
 
                     b.Property<string>("NameSurname")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

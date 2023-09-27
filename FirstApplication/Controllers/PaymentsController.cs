@@ -39,8 +39,8 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("PaymentsFromBranch")]
-        public async Task<IActionResult> PaymentsFromBranch(BranchPaymentCModel model)
+        [Route("CollectionFromBranch")]
+        public async Task<IActionResult> CollectionFromBranch(BranchPaymentCModel model)
         {
             try
             {
@@ -57,8 +57,8 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("Account")]
-        public async Task<IActionResult> Account()
+        [Route("AccountActivities")]
+        public async Task<IActionResult> AccountActivities()
         {
             try
             {
@@ -88,6 +88,20 @@ namespace BookShop.Controllers
                     totalBranchPayments,
                     remainingBranchesPayments
                 });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("Till")]
+        public async Task<IActionResult> Till()
+        {
+            try
+            {
+                return Ok();
             }
             catch (Exception ex)
             {

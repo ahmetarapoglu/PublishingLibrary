@@ -1,22 +1,17 @@
-﻿using Azure.Core;
-using BookShop.Abstract;
+﻿using BookShop.Abstract;
 using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.RequestModels;
 using BookShop.Models.UserModels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Security.Claims;
 
 namespace BookShop.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize] 
+    [Authorize]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -28,8 +23,8 @@ namespace BookShop.Controllers
         public UserController(AppDbContext context, UserManager<User> userManager, IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
-            _context= context;
-            _userManager= userManager;
+            _context = context;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
@@ -44,17 +39,16 @@ namespace BookShop.Controllers
             return Ok(response);
         }
 
-        //[AllowAnonymous]
-        //[HttpPost("register")]
-        //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        //[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        //{
-        //    var response = await _authenticationService.Register(request);
+        [HttpPost("AddUser")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddUser([FromBody] RegisterRequest request)
+        {
+            var response = await _authenticationService.Register(request);
 
-        //    return Ok(response);
-        //}
+            return Ok(response);
+        }
 
         [HttpPost("GetUsers")]
         public async Task<IActionResult> GetUsers(UserRequest model)
@@ -66,11 +60,11 @@ namespace BookShop.Controllers
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new UserModel
-                {
-                    Id = i.Id,
-                    UserName = i.UserName,
-                    Email = i.Email
-                }).ToListAsync();
+                    {
+                        Id = i.Id,
+                        UserName = i.UserName,
+                        Email = i.Email
+                    }).ToListAsync();
                 return Ok(new { users.Count, users });
             }
             catch (Exception ex)
@@ -80,8 +74,8 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpGet("GetOneUser")]
-        public async Task<IActionResult> GetOneUser(int id)
+        [HttpGet("GetUser")]
+        public async Task<IActionResult> GetUser(int id)
         {
             try
             {
@@ -100,8 +94,8 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("GetMyProfile")]
-        public async Task<IActionResult> GetMyProfile()
+        [HttpGet("GetUserProfile")]
+        public async Task<IActionResult> GetUserProfile()
         {
             try
             {

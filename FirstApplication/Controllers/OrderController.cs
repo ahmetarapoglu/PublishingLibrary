@@ -83,6 +83,10 @@ namespace BookShop.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 _context.Add(OrderCModel.Fill(model));
                 _context.SaveChanges();
                 return Ok("Order Created Successfly!.");
@@ -99,9 +103,14 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (model.Id == 0 || model.Id == null)
+                if (model.Id < 0 || model.Id == null)
                 {
                     throw new Exception("Reauested Order Not Found!.");
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
                 }
 
                 var order = await _context.Orders
