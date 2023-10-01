@@ -1,8 +1,8 @@
 ﻿using BookShop.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Reflection.Emit;
+using static BookShop.Entities.Invoice;
+using static BookShop.Entities.Order;
 
 namespace BookShop.Db
 {
@@ -25,6 +25,7 @@ namespace BookShop.Db
         public DbSet<Branch> Branches { get; set; }
         public DbSet<BranchPayment> BranchPayments { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
 
         public AppDbContext(DbContextOptions options) : base(options)
         {
@@ -50,6 +51,7 @@ namespace BookShop.Db
             modelBuilder.ApplyConfiguration(new UserRoleConfig());
             modelBuilder.ApplyConfiguration(new UserConfig());
             modelBuilder.ApplyConfiguration(new RoleConfig());
+            modelBuilder.ApplyConfiguration(new InvoiceConfig());
 
             //------------------------//
             //One To One RelationShip :
@@ -118,7 +120,6 @@ namespace BookShop.Db
                 .HasOne(s => s.Branch)
                 .WithMany(g => g.Orders)
                 .HasForeignKey(s => s.BranchId);
-
 
 
             modelBuilder.Entity<BookAuthor>().HasKey(sc => new { sc.AuthorId, sc.BookId });

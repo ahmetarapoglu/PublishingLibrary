@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookShop.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230924205349_addDataBase")]
-    partial class addDataBase
+    [Migration("20231001201238_Update_01")]
+    partial class Update_01
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -286,6 +286,30 @@ namespace BookShop.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("BookShop.Entities.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsInvoiced")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("BookShop.Entities.Order", b =>
@@ -615,6 +639,17 @@ namespace BookShop.Migrations
                     b.Navigation("Branch");
                 });
 
+            modelBuilder.Entity("BookShop.Entities.Invoice", b =>
+                {
+                    b.HasOne("BookShop.Entities.Order", "Order")
+                        .WithOne("Invoice")
+                        .HasForeignKey("BookShop.Entities.Invoice", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("BookShop.Entities.Order", b =>
                 {
                     b.HasOne("BookShop.Entities.BookVersion", "BookVersion")
@@ -724,6 +759,12 @@ namespace BookShop.Migrations
             modelBuilder.Entity("BookShop.Entities.Category", b =>
                 {
                     b.Navigation("Books");
+                });
+
+            modelBuilder.Entity("BookShop.Entities.Order", b =>
+                {
+                    b.Navigation("Invoice")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BookShop.Entities.Role", b =>

@@ -285,6 +285,30 @@ namespace BookShop.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("BookShop.Entities.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsInvoiced")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Invoices");
+                });
+
             modelBuilder.Entity("BookShop.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -612,6 +636,17 @@ namespace BookShop.Migrations
                     b.Navigation("Branch");
                 });
 
+            modelBuilder.Entity("BookShop.Entities.Invoice", b =>
+                {
+                    b.HasOne("BookShop.Entities.Order", "Order")
+                        .WithOne("Invoice")
+                        .HasForeignKey("BookShop.Entities.Invoice", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("BookShop.Entities.Order", b =>
                 {
                     b.HasOne("BookShop.Entities.BookVersion", "BookVersion")
@@ -721,6 +756,12 @@ namespace BookShop.Migrations
             modelBuilder.Entity("BookShop.Entities.Category", b =>
                 {
                     b.Navigation("Books");
+                });
+
+            modelBuilder.Entity("BookShop.Entities.Order", b =>
+                {
+                    b.Navigation("Invoice")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BookShop.Entities.Role", b =>

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
 {
@@ -29,13 +30,14 @@ namespace BookShop.Controllers
         {
             try
             {
-                var orders = await _context.Orders
+                var orders = await _context.Orders.Include(i => i.Invoice).Include(i => i.BookVersion)
                     .Where(i => i.Branch.BranchName.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new OrderRModel
-                {
+                    {
                   Id = i.Id,
+                  IsInvoiced = i.Invoice != null ? i.Invoice.IsInvoiced : false,
                   BranchId = i.BranchId,
                   BookVersionId = i.BookVersionId,
                   BookCount = i.BookCount,
@@ -57,12 +59,13 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Orders
+                var data = await _context.Orders.Include(i=>i.Invoice).Include(i => i.BookVersion)
                     .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Order With this id :{id} Not Found!.");
 
                 var order = new OrderRModel
                 {
                     Id = data.Id,
+                    IsInvoiced = data.Invoice != null ? data.Invoice.IsInvoiced : false,
                     BranchId = data.BranchId,
                     BookVersionId = data.BookVersionId,
                     BookCount = data.BookCount,
@@ -124,7 +127,6 @@ namespace BookShop.Controllers
                 order.BranchId = model.BranchId;
                 order.BookVersionId = model.BookVersionId;
                 order.BookCount = model.BookCount;
-
                 _context.SaveChanges();
                 return Ok("Order Updated Succefuly!.");
             }
