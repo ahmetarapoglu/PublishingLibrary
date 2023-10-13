@@ -30,7 +30,6 @@ namespace BookShop.Controllers
         [Route("GetBooks")]
         public async Task<IActionResult> GetBooks(BookRequest model)
         {
-            var x = 10;
             var dtrValidation = new DataTableReqValidation();
             var validationResult = dtrValidation.Validate(model);
             if (!validationResult.IsValid)
