@@ -29,7 +29,8 @@ namespace BookShop.Controllers
         {
             try
             {
-                var invoices = await _context.Invoices.Include(i => i.Order).ThenInclude(i => i.BookVersion)
+                var invoices = await _context.Invoices.Include(i => i.Order).ThenInclude(i => i.BookVersion).ToListAsync();
+                var data = invoices
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new InvoiceRModel
@@ -45,9 +46,9 @@ namespace BookShop.Controllers
                             Total = i.Order.BookVersion.SellPrice * i.Order.BookCount,
                             profitTotal = (i.Order.BookVersion.SellPrice - i.Order.BookVersion.CostPrice) * i.Order.BookCount,
                         },
-                    }).ToListAsync();
+                    });
 
-                return Ok(new { invoices.Count, invoices });
+                return Ok(new { total= invoices.Count, data });
             }
             catch (Exception ex)
             {

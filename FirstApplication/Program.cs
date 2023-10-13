@@ -100,7 +100,9 @@ builder.Services.AddCors(options =>
             b
                 .WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowCredentials()
+                .AllowAnyMethod()
+                .WithMethods("POST","GET","PUT","DELETE");
         });
 });
 

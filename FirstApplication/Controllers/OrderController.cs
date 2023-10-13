@@ -30,8 +30,9 @@ namespace BookShop.Controllers
         {
             try
             {
-                var orders = await _context.Orders.Include(i => i.Invoice).Include(i => i.BookVersion)
-                    .Where(i => i.Branch.BranchName.Contains(model.Search))
+                var orders = await _context.Orders.Include(i => i.Invoice).Include(i => i.BookVersion).Where(i => i.Branch.BranchName.Contains(model.Search)).ToListAsync();
+                var data = orders
+                  
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new OrderRModel
@@ -43,9 +44,9 @@ namespace BookShop.Controllers
                   BookCount = i.BookCount,
                   Total = i.BookVersion.SellPrice  * i.BookCount,
                   profitTotal = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount,
-                }).ToListAsync();
+                });
 
-                return Ok(new { orders.Count, orders });
+                return Ok(new { total= orders.Count, data });
             }
             catch (Exception ex)
             {

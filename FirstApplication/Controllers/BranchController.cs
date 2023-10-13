@@ -30,11 +30,17 @@ namespace BookShop.Controllers
         [Route("GetBranches")]
         public async Task<IActionResult> GetBranches(BranchRequest model)
         {
+
             try
             {
                 var x = 0m;
                 var y = 0m;
-                var Branches = await _context.Branches.Include(i=>i.Orders).Include(i=>i.BranchPayments)
+                var branches = await _context.Branches
+                    .Include(i => i.Orders).ThenInclude(i=>i.BookVersion)
+                    .Include(i => i.BranchPayments)
+                    .ToListAsync();
+
+                var data = branches
                     .Where(i => i.BranchName.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
@@ -55,9 +61,9 @@ namespace BookShop.Controllers
                             BookVersionId = i.BookVersionId,
                             Total = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount
                         }).ToList(),
-                    }).ToListAsync();
+                    });
 
-                return Ok(new { Branches.Count, Branches });
+                return Ok(new { total = branches.Count, data });
             }
             catch (Exception ex)
             {

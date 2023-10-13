@@ -30,7 +30,7 @@ namespace BookShop.Controllers
         [Route("GetBooks")]
         public async Task<IActionResult> GetBooks(BookRequest model)
         {
-
+            var x = 10;
             var dtrValidation = new DataTableReqValidation();
             var validationResult = dtrValidation.Validate(model);
             if (!validationResult.IsValid)
@@ -45,8 +45,10 @@ namespace BookShop.Controllers
             {
                 var books = await _context.Books
                     .Include(i => i.Category)
-                    .Include(i=>i.BookAuthors)
-                    .Include(i=>i.BookVersions)
+                    .Include(i => i.BookAuthors)
+                    .Include(i => i.BookVersions).ToListAsync();
+
+                var data = books
                     .Where(i => i.Title.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
@@ -76,9 +78,9 @@ namespace BookShop.Controllers
                             LibraryRatio = i.LibraryRatio
                         }).ToList(),
 
-                    }).ToListAsync();
+                    });
 
-                return Ok(new { Total = books.Count(), books });
+                return Ok(new { total = books.Count, data });
             }
             catch (Exception ex)
             {

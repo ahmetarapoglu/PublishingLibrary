@@ -55,7 +55,8 @@ namespace BookShop.Controllers
         {
             try
             {
-                var users = await _context.Users
+                var users = await _context.Users.ToListAsync();
+                var data =users
                     .Where(i => i.UserName.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
@@ -64,8 +65,8 @@ namespace BookShop.Controllers
                         Id = i.Id,
                         UserName = i.UserName,
                         Email = i.Email
-                    }).ToListAsync();
-                return Ok(new { users.Count, users });
+                    });
+                return Ok(new { total= users.Count, data });
             }
             catch (Exception ex)
             {

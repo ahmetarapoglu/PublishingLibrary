@@ -2,6 +2,7 @@
 using BookShop.Entities;
 using BookShop.Models.CategoryModels;
 using BookShop.Models.RequestModels;
+using BookShop.Validations.ReqValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,9 +25,20 @@ namespace BookShop.Controllers
         [Route("GetCategories")]
         public async Task<IActionResult> GetCategories(CategoryRequest model)
         {
+            var dtrValidation = new DataTableReqValidation();
+            var validationResult = dtrValidation.Validate(model);
+            if (!validationResult.IsValid)
+            {
+                foreach (var error in validationResult.Errors)
+                {
+                    throw new Exception($"Error: {error.ErrorMessage}");
+                }
+            }
+
             try
             {
-                var categories =await _context.Categories
+                var categories = await _context.Categories.ToListAsync();
+                var data = categories
                     .Where(i => i.CategoryName.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
@@ -34,9 +46,9 @@ namespace BookShop.Controllers
                 {
                     Id = i.Id,  
                     CategoryName = i.CategoryName,
-                }).ToListAsync();
+                });
 
-                return Ok(new { categories.Count , categories });
+                return Ok(new { total = categories.Count , data });
             }
             catch (Exception ex)
             {
@@ -73,7 +85,6 @@ namespace BookShop.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
 
                 _context.Add(CategoryCModel.Fill(model));
                 _context.SaveChanges();

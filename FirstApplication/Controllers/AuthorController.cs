@@ -29,73 +29,70 @@ namespace BookShop.Controllers
         [Route("GetAuthors")]
         public async Task<IActionResult> GetAuthors(AuthorRequest model)
         {
-            //var dtrValidation = new DataTableReqValidation();
-            //var validationResult = dtrValidation.Validate(model);
-            //if (!validationResult.IsValid)
-            //{
-            //    foreach (var error in validationResult.Errors)
-            //    {
-            //        throw new Exception($"Error: {error.ErrorMessage}");
-            //    }
-            //}
 
             try
             {
                 var authors = await _context.Authors
                     .Include(i => i.AuthorAddress)
                     .Include(i => i.AuthorBiography)
-                    .Include(i => i.AuthorPayments)
                     .Include(i => i.BookAuthors)
                     .ThenInclude(i => i.Book)
                     .ThenInclude(i => i.BookVersions)
                     .ThenInclude(i => i.Orders)
-                    .Where(i => i.NameSurname.Contains(model.Search))
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i => new AuthorRModel
+                    .Include(i => i.BookAuthors)
+                    .ThenInclude(i => i.Book)
+                    .ThenInclude(i => i.Category)
+                    .Include(i => i.AuthorPayments)
+                    .ToListAsync();
+
+                var data = authors
+                .Where(i => i.NameSurname.Contains(model.Search))
+                .Skip(model.Skip)
+                .Take(model.Take)
+                .Select(i => new AuthorRModel
+                {
+                    Id = i.Id,
+                    NameSurname = i.NameSurname,
+                    TotalAmount = 0,
+                    TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
+                    RemainingPayment = 0,
+                    AuthorAddress = new AuthorAddressModel
                     {
-                        Id = i.Id,
-                        NameSurname = i.NameSurname,
-                        TotalAmount = 0,
-                        TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
-                        RemainingPayment = 0,
-                        AuthorAddress = new AuthorAddressModel
+                        Country = i.AuthorAddress.Country,
+                        City = i.AuthorAddress.City,
+                        PostCode = i.AuthorAddress.PostCode,
+                    },
+                    AuthorBiography = new AuthorBiographyModel
+                    {
+                        Email = i.AuthorBiography.Email,
+                        PhoneNumber = i.AuthorBiography.PhoneNumber,
+                        NativeLanguage = i.AuthorBiography.NativeLanguage,
+                        Education = i.AuthorBiography.Education
+                    },
+                    Books = i.BookAuthors.Select(i => new BookInAuthors
+                    {
+                        Id = i.Book.Id,
+                        Title = i.Book.Title,
+                        Description = i.Book.Description,
+                        PublishedDate = i.Book.PublishedDate,
+                        CategoryName = i.Book.Category.CategoryName,
+                        BookVersions = i.Book.BookVersions.Select(i =>
+                        new BookVersionRModel
                         {
-                            Country = i.AuthorAddress.Country,
-                            City = i.AuthorAddress.City,
-                            PostCode = i.AuthorAddress.PostCode,
-                        },
-                        AuthorBiography = new AuthorBiographyModel
-                        {
-                            Email = i.AuthorBiography.Email,
-                            PhoneNumber = i.AuthorBiography.PhoneNumber,
-                            NativeLanguage = i.AuthorBiography.NativeLanguage,
-                            Education = i.AuthorBiography.Education
-                        },
-                        Books = i.BookAuthors.Select(i => new BookInAuthors
-                        {
-                            Id = i.Book.Id,
-                            Title = i.Book.Title,
-                            Description = i.Book.Description,
-                            PublishedDate = i.Book.PublishedDate,
-                            CategoryName = i.Book.Category.CategoryName,
-                            BookVersions = i.Book.BookVersions.Select(i =>
-                            new BookVersionRModel
-                            {
-                                Id = i.Id,
-                                Number = i.Number,
-                                BookCount = i.BookCount,
-                                CostPrice = i.CostPrice,
-                                TotalCostPrice = i.CostPrice * i.BookCount,
-                                SellPrice = i.SellPrice,
-                                TotalSellPrice = i.SellPrice * i.BookCount,
-                                LibraryRatio = i.LibraryRatio,
-                            }).ToList()
-                        }).ToList(),
-                    }).ToListAsync();
+                            Id = i.Id,
+                            Number = i.Number,
+                            BookCount = i.BookCount,
+                            CostPrice = i.CostPrice,
+                            TotalCostPrice = i.CostPrice * i.BookCount,
+                            SellPrice = i.SellPrice,
+                            TotalSellPrice = i.SellPrice * i.BookCount,
+                            LibraryRatio = i.LibraryRatio,
+                        }).ToList()
+                    }).ToList(),
+                });
 
 
-                return Ok(new { Total = authors.Count, authors });
+                return Ok(new {total = authors.Count, data });
             }
             catch (Exception ex)
             {

@@ -12492,11 +12492,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\BookShop.csproj",
+      "projectUniqueName": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\BookShop.csproj",
       "projectName": "BookShop",
-      "projectPath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\BookShop.csproj",
+      "projectPath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\BookShop.csproj",
       "packagesPath": "C:\\Users\\ihab\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary\\FirstApplication\\obj\\",
+      "outputPath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\ihab\\AppData\\Roaming\\NuGet\\NuGet.Config",
