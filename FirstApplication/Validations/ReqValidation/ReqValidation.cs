@@ -9,11 +9,9 @@ namespace BookShop.Validations.ReqValidation
         public DataTableReqValidation()
         {
             RuleFor(i => i.Current)
-                //.NotEmpty().WithMessage("CurrentPage is required.")
                 .GreaterThan(0).WithMessage("CurrentPage must be greater than 0.");
 
             RuleFor(i => i.PageSize)
-                //.NotEmpty().WithMessage("PageSize is required.")
                 .GreaterThan(0).WithMessage("PageSize must be greater than 0.");
         }
     }

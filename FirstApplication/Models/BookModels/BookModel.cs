@@ -15,6 +15,6 @@ namespace BookShop.Models.BookModels
         [DataType(DataType.DateTime)]
         public DateTime PublishedDate { get; set; }
         public List<AuthorInBookModel> BookAuthors { get; set; }
-        public BookVersionCUModel BookVersions { get; set; }
+        //public BookVersionCUModel BookVersions { get; set; }
     }
 }

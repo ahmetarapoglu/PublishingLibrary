@@ -38,10 +38,11 @@ namespace BookShop.Controllers
                 var branches = await _context.Branches
                     .Include(i => i.Orders).ThenInclude(i=>i.BookVersion)
                     .Include(i => i.BranchPayments)
+                    .Where(i => i.BranchName.Contains(model.Search))
+                    .OrderByDescending(i => i.Id)
                     .ToListAsync();
 
                 var data = branches
-                    .Where(i => i.BranchName.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new BranchRModel
@@ -86,7 +87,7 @@ namespace BookShop.Controllers
                     BranchAddress= data.BranchAddress,
                     BranchName = data.BranchName,
                     PhoneNumber = data.PhoneNumber,
-                    TotalAmount = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
+                    TotalAmount = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) ,
                     TotalPayment = data.BranchPayments.Sum(i => i.Amount),
                     RemainingPayment = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - data.BranchPayments.Sum(i => i.Amount),
                     Orders = data.Orders.Select(i => new OrderRModel
@@ -119,7 +120,7 @@ namespace BookShop.Controllers
 
                 _context.Add(BranchCModel.Fill(model));
                 _context.SaveChanges();
-                return Ok("Branch Created Successfly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {
@@ -128,6 +129,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPut]
+        [HttpPost]
         [Route("UpdateBranch")]
         public async Task<IActionResult> UpdateBranch(BranchUModel model)
         {
@@ -149,12 +151,12 @@ namespace BookShop.Controllers
                     return BadRequest(ModelState);
                 }
 
-                branch.BranchName = model.BranchName;
+                 branch.BranchName = model.BranchName;
                  branch.BranchAddress = model.BranchAddress;
                  branch.PhoneNumber = model.PhoneNumber;
 
                 _context.SaveChanges();
-                return Ok("Branch Updated Succefuly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {

@@ -6,5 +6,6 @@ namespace BookShop.Abstract
     {
         Task<string> Register(RegisterRequest request);
         Task<string> Login(LoginRequest request);
+
     }
 }

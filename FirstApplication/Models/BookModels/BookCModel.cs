@@ -19,18 +19,18 @@ namespace BookShop.Models.BookModels
                 {
                     AuthorId = i.AuthorId,
                     AuhorRatio = i.AuhorRatio,
-                }).ToList(),
-                BookVersions = new List<BookVersion>
-                {
-                    new BookVersion
-                    {
-                        Number = 1,
-                        BookCount = model.BookVersions.BookCount,
-                        CostPrice = model.BookVersions.CostPrice,
-                        SellPrice = model.BookVersions.SellPrice,
-                        LibraryRatio = model.BookVersions.LibraryRatio,
-                    },
-                }
+                }).ToList()
+                //BookVersions = new List<BookVersion>
+                //{
+                //    new BookVersion
+                //    {
+                //        Number = 1,
+                //        BookCount = model.BookVersions.BookCount,
+                //        CostPrice = model.BookVersions.CostPrice,
+                //        SellPrice = model.BookVersions.SellPrice,
+                //        LibraryRatio = model.BookVersions.LibraryRatio,
+                //    },
+                //}
             };
 
     }

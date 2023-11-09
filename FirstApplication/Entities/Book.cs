@@ -11,6 +11,7 @@
         public Category Category { get; set; }
 
         public List<BookAuthor> BookAuthors { get; set;}
+
         public List<BookVersion> BookVersions { get; set;}
     }
 }

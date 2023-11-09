@@ -30,7 +30,13 @@ namespace BookShop.Controllers
         {
             try
             {
-                var orders = await _context.Orders.Include(i => i.Invoice).Include(i => i.BookVersion).Where(i => i.Branch.BranchName.Contains(model.Search)).ToListAsync();
+                var orders = await _context.Orders
+                    .Include(i => i.Invoice)
+                    .Include(i => i.BookVersion)
+                    .ThenInclude(i=>i.Book)
+                    .Include(i => i.Branch)
+                    .Where(i => i.Branch.BranchName.Contains(model.Search))
+                    .OrderByDescending(i => i.Id).ToListAsync();
                 var data = orders
                   
                     .Skip(model.Skip)
@@ -38,9 +44,12 @@ namespace BookShop.Controllers
                     .Select(i => new OrderRModel
                     {
                   Id = i.Id,
-                  IsInvoiced = i.Invoice != null ? i.Invoice.IsInvoiced : false,
+                  IsInvoiced = i.IsInvoiced,
                   BranchId = i.BranchId,
+                  BranchName = i.Branch.BranchName,
                   BookVersionId = i.BookVersionId,
+                  Number = i.BookVersion.Number,
+                  BookName = i.BookVersion.Book.Title,
                   BookCount = i.BookCount,
                   Total = i.BookVersion.SellPrice  * i.BookCount,
                   profitTotal = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount,
@@ -60,15 +69,22 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Orders.Include(i=>i.Invoice).Include(i => i.BookVersion)
+                var data = await _context.Orders
+                    .Include(i=>i.Invoice)
+                    .Include(i => i.BookVersion)
+                    .ThenInclude(i => i.Book)
+                    .Include(i => i.Branch)
                     .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Order With this id :{id} Not Found!.");
 
                 var order = new OrderRModel
                 {
                     Id = data.Id,
-                    IsInvoiced = data.Invoice != null ? data.Invoice.IsInvoiced : false,
+                    IsInvoiced = data.IsInvoiced,
                     BranchId = data.BranchId,
+                    BranchName = data.Branch.BranchName,
                     BookVersionId = data.BookVersionId,
+                    Number = data.BookVersion.Number,
+                    BookName = data.BookVersion.Book.Title,
                     BookCount = data.BookCount,
                     Total = data.BookVersion.SellPrice  * data.BookCount,
                     profitTotal = (data.BookVersion.SellPrice - data.BookVersion.CostPrice) * data.BookCount,
@@ -93,7 +109,7 @@ namespace BookShop.Controllers
                 }
                 _context.Add(OrderCModel.Fill(model));
                 _context.SaveChanges();
-                return Ok("Order Created Successfly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {
@@ -102,6 +118,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPut]
+        [HttpPost]
         [Route("UpdateOrder")]
         public async Task<IActionResult> UpdateOrder(OrderUModel model)
         {
@@ -128,8 +145,9 @@ namespace BookShop.Controllers
                 order.BranchId = model.BranchId;
                 order.BookVersionId = model.BookVersionId;
                 order.BookCount = model.BookCount;
+                order.IsInvoiced = false;
                 _context.SaveChanges();
-                return Ok("Order Updated Succefuly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {

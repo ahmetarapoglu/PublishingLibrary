@@ -43,10 +43,11 @@ namespace BookShop.Controllers
                     .ThenInclude(i => i.Book)
                     .ThenInclude(i => i.Category)
                     .Include(i => i.AuthorPayments)
+                    .Where(i => i.NameSurname.Contains(model.Search))
+                    .OrderByDescending(i => i.Id)
                     .ToListAsync();
 
                 var data = authors
-                .Where(i => i.NameSurname.Contains(model.Search))
                 .Skip(model.Skip)
                 .Take(model.Take)
                 .Select(i => new AuthorRModel
@@ -185,8 +186,8 @@ namespace BookShop.Controllers
                 }
 
                 _context.Add(AuthorCModel.Fill(model));
-                _context.SaveChanges();
-                return Ok("Author Created Successfly!.");
+                 _context.SaveChanges();
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {
@@ -194,6 +195,7 @@ namespace BookShop.Controllers
             }
         }
 
+        [HttpPost]
         [HttpPut]
         [Route("UpdateAuthor")]
         public async Task<IActionResult> UpdateAuthor(AuthorUModel model)
@@ -232,7 +234,7 @@ namespace BookShop.Controllers
                     Education = model.AuthorBiography.Education
                 };
                 _context.SaveChanges();
-                return Ok("Author Updated Succefuly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {

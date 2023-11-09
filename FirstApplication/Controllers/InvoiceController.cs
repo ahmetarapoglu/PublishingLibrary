@@ -29,19 +29,23 @@ namespace BookShop.Controllers
         {
             try
             {
-                var invoices = await _context.Invoices.Include(i => i.Order).ThenInclude(i => i.BookVersion).ToListAsync();
+                var invoices = await _context.Invoices
+                    .Include(i => i.Order)
+                    .ThenInclude(i => i.BookVersion)
+                    .OrderByDescending(i => i.Id)
+                    .ToListAsync();
                 var data = invoices
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new InvoiceRModel
                     {
                         Id = i.Id,
-                        IsInvoiced = i.IsInvoiced,
                         Order = new OrderRModel
                         {
                             Id = i.Id,
                             BranchId = i.Order.BranchId,
                             BookVersionId = i.Order.BookVersionId,
+                            BookName = i.Order.BookVersion.Book.Title,
                             BookCount = i.Order.BookCount,
                             Total = i.Order.BookVersion.SellPrice * i.Order.BookCount,
                             profitTotal = (i.Order.BookVersion.SellPrice - i.Order.BookVersion.CostPrice) * i.Order.BookCount,
@@ -68,12 +72,12 @@ namespace BookShop.Controllers
                 var invoice = new InvoiceRModel
                 {
                     Id = data.Id,
-                    IsInvoiced = data.IsInvoiced,
                     Order = new OrderRModel
                     {
                         Id = data.Id,
                         BranchId = data.Order.BranchId,
                         BookVersionId = data.Order.BookVersionId,
+                        BookName = data.Order.BookVersion.Book.Title,
                         BookCount = data.Order.BookCount,
                         Total = data.Order.BookVersion.SellPrice * data.Order.BookCount,
                         profitTotal = (data.Order.BookVersion.SellPrice - data.Order.BookVersion.CostPrice) * data.Order.BookCount,
@@ -99,9 +103,15 @@ namespace BookShop.Controllers
                     return BadRequest(ModelState);
                 }
 
+                var order = await _context.Orders.Include(i => i.Invoice).FirstOrDefaultAsync(i=>i.Id == model.OrderId);
+                if(!order.IsInvoiced) {
+                    order.BookVersionId = model.BookVersionId;
+                    order.BookCount = model.BookCount;
+                    order.IsInvoiced = true;
+                }
                 _context.Add(InvoiceCModel.Fill(model));
                 _context.SaveChanges();
-                return Ok("Invoice Created Successfly!.");
+                return Ok(new {});
             }
             catch (Exception ex)
             {
@@ -115,25 +125,21 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (model.Id < 0 || model.Id == null)
-                {
-                    throw new Exception("Reauested Order Not Found!.");
-                }
 
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+       
+                if (model.Id < 0 || model.Id == null)  throw new Exception("Reauested Order Not Found!.");
 
                 var invoice = await _context.Invoices
-                    .FirstOrDefaultAsync(i => i.Id == model.Id);
+                    .FirstOrDefaultAsync(i => i.Id == model.Id) ?? throw new Exception("Requested Order Not Found!.");
 
-                if (invoice == null)
+                var order = await _context.Orders.Include(i => i.Invoice).FirstOrDefaultAsync(i => i.Id == model.OrderId);
+                if (!order.IsInvoiced)
                 {
-                    throw new Exception("Requested Order Not Found!.");
+                    order.BookVersionId = model.BookVersionId;
+                    order.BookCount = model.BookCount;
+                    order.IsInvoiced = true;
                 }
-
-                invoice.IsInvoiced = model.IsInvoiced;
                 _context.SaveChanges();
                 return Ok("Invoice Updated Succefuly!.");
             }

@@ -35,8 +35,19 @@ namespace BookShop.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var response = await _authenticationService.Login(request);
+            var data = await _userManager.FindByNameAsync(request.UserName);
 
-            return Ok(response);
+            if (data is null)
+            {
+                data = await _userManager.FindByEmailAsync(request.UserName);
+            }
+
+             var user = new UserModel { 
+                 Id = data.Id,
+                 UserName = data.UserName,
+                 Email = data.Email
+             };
+            return Ok(new { token = response , user });
         }
 
         [HttpPost("AddUser")]
@@ -47,7 +58,8 @@ namespace BookShop.Controllers
         {
             var response = await _authenticationService.Register(request);
 
-            return Ok(response);
+            return Ok(new { status = true });
+
         }
 
         [HttpPost("GetUsers")]
@@ -58,6 +70,7 @@ namespace BookShop.Controllers
                 var users = await _context.Users.ToListAsync();
                 var data =users
                     .Where(i => i.UserName.Contains(model.Search))
+                    .OrderByDescending(i => i.Id)
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new UserModel
@@ -115,6 +128,7 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost("UpdateUser")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser(UserModel request)
         {
@@ -125,7 +139,7 @@ namespace BookShop.Controllers
                 user.Email = request.Email;
 
                 await _context.SaveChangesAsync();
-                return Ok("User details updates");
+                return Ok(new { status = true });
 
             }
             catch (Exception ex)

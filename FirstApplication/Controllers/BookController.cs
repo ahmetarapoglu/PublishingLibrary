@@ -45,10 +45,12 @@ namespace BookShop.Controllers
                 var books = await _context.Books
                     .Include(i => i.Category)
                     .Include(i => i.BookAuthors)
-                    .Include(i => i.BookVersions).ToListAsync();
+                    .Include(i => i.BookVersions)
+                    .Where(i => i.Title.Contains(model.Search))
+                    .OrderByDescending(i => i.Id)
+                    .ToListAsync();
 
                 var data = books
-                    .Where(i => i.Title.Contains(model.Search))
                     .Skip(model.Skip)
                     .Take(model.Take)
                     .Select(i => new BookRModel
@@ -58,16 +60,17 @@ namespace BookShop.Controllers
                         Description = i.Description,
                         PublishedDate = i.PublishedDate,
                         CategoryName = i.Category.CategoryName,
+                        categoryId = i.CategoryId,
                         BookAuthors = i.BookAuthors.Select(i=>new AuthorInBookModel
                         {
                             AuthorId = i.AuthorId,
                             AuhorRatio = i.AuhorRatio,
                         }).ToList(),
 
-                        BookVersions =i.BookVersions.Select(i=>
+                        BookVersions = i.BookVersions.Select(i =>
                         new BookVersionRModel
                         {
-                            Id=i.Id,
+                            Id = i.Id,
                             BookCount = i.BookCount,
                             Number = i.Number,
                             CostPrice = i.CostPrice,
@@ -106,6 +109,7 @@ namespace BookShop.Controllers
                     Description = data.Description,
                     PublishedDate = data.PublishedDate,
                     CategoryName = data.Category.CategoryName,
+                    categoryId = data.CategoryId,
                     BookAuthors = data.BookAuthors.Select(i => new AuthorInBookModel
                     {
                         AuthorId = i.AuthorId,
@@ -115,7 +119,7 @@ namespace BookShop.Controllers
                     BookVersions = data.BookVersions.Select(i =>
                     new BookVersionRModel
                     {
-                        Id=i.Id,
+                        Id = i.Id,
                         BookCount = i.BookCount,
                         Number = i.Number,
                         CostPrice = i.CostPrice,
@@ -145,55 +149,20 @@ namespace BookShop.Controllers
                 }
                 _context.Add(BookCModel.Fill(model));
                 _context.SaveChanges();
-                return Ok("Book Created Successfly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.InnerException.Message);
             }
         }
-
+       
         [HttpPost]
-        [Route("CreateVersion")]
-        public async Task<IActionResult> CreateVersion(NewVersionCUModel model)
-        {
-            try
-            {
-                if (model.BookId == 0 || model.BookId == null)
-                {
-                    throw new Exception("Reauested Book Not Found!.");
-                }
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                var book = await _context.Books
-                    .Include(i => i.BookVersions)
-                    .FirstOrDefaultAsync(i => i.Id == model.BookId);
-
-                if (book == null)
-                {
-                    throw new Exception("Requested Book Not Found!.");
-                }
-
-                var number = book.BookVersions.OrderByDescending(i => i.Id).Select(i => i.Number).FirstOrDefault();
-                
-
-                _context.Add(NewVersionCUModel.Fill(model,number));
-                _context.SaveChanges();
-                return Ok("Version Created Successfly!.");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpPut]
         [Route("UpdateBook")]
         public async Task<IActionResult> UpdateBook(BookUModel model)
         {
+
             try
             {
                 if (model.Id < 0 || model.Id == null)
@@ -224,19 +193,20 @@ namespace BookShop.Controllers
                     AuthorId = i.AuthorId,
                     AuhorRatio = i.AuhorRatio,
                 }).ToList();
-                book.BookVersions = new List<BookVersion>
-                {
-                    new BookVersion
-                    {
-                        BookCount = model.BookVersions.BookCount,
-                        CostPrice = model.BookVersions.CostPrice,
-                        SellPrice = model.BookVersions.SellPrice,
-                        LibraryRatio = model.BookVersions.LibraryRatio,
-                    },
-                };
+
+                //book.BookVersions = new List<BookVersion>
+                //{
+                //    new BookVersion
+                //    {
+                //        BookCount = model.BookVersions.BookCount,
+                //        CostPrice = model.BookVersions.CostPrice,
+                //        SellPrice = model.BookVersions.SellPrice,
+                //        LibraryRatio = model.BookVersions.LibraryRatio,
+                //    },
+                //};
 
                 _context.SaveChanges();
-                return Ok("Book Updated Succefuly!.");
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {

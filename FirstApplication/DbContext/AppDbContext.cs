@@ -52,6 +52,7 @@ namespace BookShop.Db
             modelBuilder.ApplyConfiguration(new UserConfig());
             modelBuilder.ApplyConfiguration(new RoleConfig());
             modelBuilder.ApplyConfiguration(new InvoiceConfig());
+            modelBuilder.ApplyConfiguration(new OrderConfig());
 
             //------------------------//
             //One To One RelationShip :

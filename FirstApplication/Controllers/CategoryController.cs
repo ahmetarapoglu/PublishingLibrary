@@ -1,12 +1,19 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
 using BookShop.Entities;
 using BookShop.Models.CategoryModels;
 using BookShop.Models.RequestModels;
+using BookShop.Services;
 using BookShop.Validations.ReqValidation;
+using FluentValidation;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
+using Error = BookShop.Services.Error;
 
 namespace BookShop.Controllers
 {
@@ -15,40 +22,87 @@ namespace BookShop.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public CategoryController(AppDbContext context)
+        private readonly IRepository<Category> _categoryrepository;
+        private readonly IValidator<CategoryRequest> _requestValidator;
+
+
+        public CategoryController(
+            IRepository<Category> categoryrepository,
+            IValidator<CategoryRequest> requestValidator)
         {
-            _context = context;
+            _categoryrepository = categoryrepository;
+            _requestValidator = requestValidator;
         }
 
         [HttpPost]
         [Route("GetCategories")]
         public async Task<IActionResult> GetCategories(CategoryRequest model)
         {
-            var dtrValidation = new DataTableReqValidation();
-            var validationResult = dtrValidation.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    throw new Exception($"Error: {error.ErrorMessage}");
-                }
-            }
-
             try
             {
-                var categories = await _context.Categories.ToListAsync();
-                var data = categories
-                    .Where(i => i.CategoryName.Contains(model.Search))
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i=>new CategoryRModel
+                Validator<CategoryRequest> t = new();
+                t.Validations(model);
+
+                //var validation = _requestValidator.Validate(model);
+                //if (!validation.IsValid)
+                //{
+                //    var errors = validation.Errors.Select(error => new Error
+                //    {
+                //        Key = Enum.EnumErrorTypes.Danger,
+                //        Code = "400",
+                //        Title = error.PropertyName,
+                //        Description = error.ErrorMessage,
+                //    }).ToList();
+
+                //    throw new OzelException(errors);
+                //}
+
+                //Where.
+                Expression<Func<Category, bool>> filter = Category => true;
+
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
+
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Search.
+                if (!string.IsNullOrEmpty(model.Search))
+                    filter = filter.And(i => i.CategoryName.Contains(model.Search));
+
+                //include.
+                static IIncludableQueryable<Category, object> include(IQueryable<Category> query) => query.Include(i => i.Books);
+
+                //Sort.
+                Expression<Func<Category, object>> Order = model.Order switch
                 {
-                    Id = i.Id,  
-                    CategoryName = i.CategoryName,
+                    "id" => i => i.Id,
+                    "categoryName" => i => i.CategoryName,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<Category> orderBy(IQueryable<Category> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select.
+                static IQueryable<CategoryRModel> select(IQueryable<Category> query) => query.Select(entity => new CategoryRModel
+                {
+                    Id = entity.Id,
+                    CategoryName = entity.CategoryName,
+                    CreateDate = entity.CreateDate,
                 });
 
-                return Ok(new { total = categories.Count , data });
+                var (total, data) = await _categoryrepository.GetListAndTotalAsync(select, filter, include, orderBy, skip: model.Skip, take: model.Take);
+
+                return Ok(new { data, total });
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -58,20 +112,28 @@ namespace BookShop.Controllers
 
         [HttpGet]
         [Route("GetCategory/{id}")]
-        public async Task<IActionResult> GetCategory(int id) {
+        public async Task<IActionResult> GetCategory(int id)
+        {
             try
             {
-                var data = await _context.Categories.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Category With this id :{id} Not Found!.");
-                var category = new CategoryRModel
+                //Where
+                Expression<Func<Category, bool>> filter = i => i.Id == id;
+
+                //Select
+                static IQueryable<CategoryRModel> select(IQueryable<Category> query) => query.Select(entity => new CategoryRModel
                 {
-                    Id = data.Id,
-                    CategoryName = data.CategoryName,
-                };
+                    Id = entity.Id,
+                    CategoryName = entity.CategoryName,
+                    CreateDate = entity.CreateDate
+                });
+
+                var category = await _categoryrepository.FindAsync(select, filter);
+
                 return Ok(category);
             }
-            catch (Exception ex)
+            catch (OzelException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.Errors);
             }
         }
 
@@ -86,9 +148,18 @@ namespace BookShop.Controllers
                     return BadRequest(ModelState);
                 }
 
-                _context.Add(CategoryCModel.Fill(model));
-                _context.SaveChanges();
-                return Ok("Category Created Successfly!.");
+                var entity = new Category
+                {
+                    CategoryName = model.CategoryName,
+                };
+
+                await _categoryrepository.AddAsync(entity);
+
+                return Ok(new { status = true });
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -97,27 +168,31 @@ namespace BookShop.Controllers
         }
 
         [HttpPut]
+        [HttpPost]
         [Route("UpdateCategory")]
         public async Task<IActionResult> UpdateCategory(CategoryUModel model)
         {
             try
             {
-                if(model.Id ==0 || model.Id == null)
+                if (model.Id == 0 || model.Id == null)
                 {
                     throw new Exception("Reauested Category Not Found!.");
                 }
-                var category = await _context.Categories.FirstOrDefaultAsync(i=>i.Id == model.Id);
-                if(category == null)
-                {
-                     throw new Exception("Requested Category Not Found!.");
-                }
+
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
-                category.CategoryName = model.CategoryName;
-                _context.SaveChanges();
-                return Ok("Category Updated Succefuly!.");
+                //Where
+                Expression<Func<Category, bool>> filter = i => i.Id == model.Id;
+
+                var entity = await _categoryrepository.FindAsync(filter);
+
+                entity!.CategoryName = model.CategoryName;
+
+                await _categoryrepository.UpdateAsync(entity);
+
+                return Ok(new { status = true });
             }
             catch (Exception ex)
             {
@@ -127,14 +202,15 @@ namespace BookShop.Controllers
 
         [HttpDelete]
         [Route("DeleteCategory")]
-        public async Task<IActionResult> DeleteCategory (int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             try
             {
-                var category = await _context.Categories.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Category whith this ID:{id} Nof Found!.");
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-                return Ok("Category Removed Successfuly!.");
+                //Where
+                Expression<Func<Category, bool>> filter = i => i.Id == id;
+
+                await _categoryrepository.DeleteAsync(filter);
+                return Ok();
             }
             catch (Exception ex)
             {

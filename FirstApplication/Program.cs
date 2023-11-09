@@ -1,11 +1,16 @@
 using BookShop.Abstract;
+using BookShop.Concreate;
 using BookShop.Db;
 using BookShop.Entities;
+using BookShop.Models.RequestModels;
 using BookShop.Seed;
+using BookShop.Validations.ReqValidation;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +19,8 @@ var configuration = builder.Configuration;
 
 // 1. DbContext
 builder.Services.AddDbContext<AppDbContext>();
+
+#region Identity
 
 // 2. Identity
 builder.Services.AddIdentity<User, Role>(c =>
@@ -26,6 +33,8 @@ builder.Services.AddIdentity<User, Role>(c =>
     .AddUserManager<UserManager<User>>()
     .AddSignInManager<SignInManager<User>>();
 
+
+#endregion
 
 // 3. Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -50,9 +59,22 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-// Add services to the container.
+#region Scoped
+
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IRepository<Category>, GenericRepository<Category>>();
+
+#endregion
+
+#region Validator
+
+builder.Services.AddTransient<IValidator<CategoryRequest>, DataTableReqValidation>();
+
+#endregion
+
 builder.Services.AddControllers();
+
+
 
 //Add Service To the container.
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
@@ -91,6 +113,9 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+#region Cors
+
 // 6. Add CORS policy
 builder.Services.AddCors(options =>
 {
@@ -98,6 +123,8 @@ builder.Services.AddCors(options =>
         b =>
         {
             b
+                 //.WithOrigins("https://nextauth-sage.vercel.app")
+                 //.WithOrigins("https://bookshop-theta.vercel.app")
                 .WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                 .AllowCredentials()
@@ -105,18 +132,20 @@ builder.Services.AddCors(options =>
                 .WithMethods("POST","GET","PUT","DELETE");
         });
 });
-
-
+#endregion
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+//Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     await DbInitializer.InitializerAsync(app);
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//await DbInitializer.InitializerAsync(app);
+//app.UseSwagger();
+//app.UseSwaggerUI();
 
 //7. Use CORS
 app.UseCors("AllowAngularDevClient");

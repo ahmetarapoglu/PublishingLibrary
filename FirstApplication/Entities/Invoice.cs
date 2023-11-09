@@ -1,17 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
-using System.ComponentModel;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BookShop.Entities
 {
     public class Invoice
     {
         public int Id { get; set; }
-
         public int OrderId { get; set; }
         public Order Order { get; set; }
-        public bool IsInvoiced { get; set; }
 
         public class InvoiceConfig : IEntityTypeConfiguration<Invoice>
         {
@@ -26,9 +22,6 @@ namespace BookShop.Entities
                 builder.HasOne<Order>(i => i.Order)
                         .WithOne(o => o.Invoice)
                         .HasForeignKey<Invoice>(i => i.OrderId);
-
-                builder.Property(o => o.IsInvoiced)
-                       .HasDefaultValue(true);
             }
         }
     }

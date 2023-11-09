@@ -8,7 +8,8 @@ namespace BookShop.Models.OrderModels
         {
             BranchId = model.BranchId,
             BookVersionId = model.BookVersionId,
-            BookCount = model.BookCount
+            BookCount = model.BookCount,
+            IsInvoiced = false
         };
     }
 }
