@@ -3,17 +3,12 @@ using BookShop.Entities;
 using BookShop.Models.CategoryModels;
 using BookShop.Models.RequestModels;
 using BookShop.Services;
-using BookShop.Validations.ReqValidation;
-using FluentValidation;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using Error = BookShop.Services.Error;
 
 namespace BookShop.Controllers
 {
@@ -23,15 +18,15 @@ namespace BookShop.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly IRepository<Category> _categoryrepository;
-        private readonly IValidator<CategoryRequest> _requestValidator;
+        private readonly IValidation<CategoryRequest> _validate;
 
 
         public CategoryController(
             IRepository<Category> categoryrepository,
-            IValidator<CategoryRequest> requestValidator)
+            IValidation<CategoryRequest> validate)
         {
             _categoryrepository = categoryrepository;
-            _requestValidator = requestValidator;
+            _validate = validate;
         }
 
         [HttpPost]
@@ -40,22 +35,8 @@ namespace BookShop.Controllers
         {
             try
             {
-                Validator<CategoryRequest> t = new();
-                t.Validations(model);
-
-                //var validation = _requestValidator.Validate(model);
-                //if (!validation.IsValid)
-                //{
-                //    var errors = validation.Errors.Select(error => new Error
-                //    {
-                //        Key = Enum.EnumErrorTypes.Danger,
-                //        Code = "400",
-                //        Title = error.PropertyName,
-                //        Description = error.ErrorMessage,
-                //    }).ToList();
-
-                //    throw new OzelException(errors);
-                //}
+                //Validation
+                _validate.Validator(model);
 
                 //Where.
                 Expression<Func<Category, bool>> filter = Category => true;
@@ -71,7 +52,7 @@ namespace BookShop.Controllers
                 if (!string.IsNullOrEmpty(model.Search))
                     filter = filter.And(i => i.CategoryName.Contains(model.Search));
 
-                //include.
+                //Include.
                 static IIncludableQueryable<Category, object> include(IQueryable<Category> query) => query.Include(i => i.Books);
 
                 //Sort.

@@ -1,31 +1,34 @@
-﻿using BookShop.Models.RequestModels;
+﻿using BookShop.Enum;
 using FluentValidation;
 
 namespace BookShop.Services
 {
-    public class Validator<T> where T : class
+    public interface IValidation<T> where T : class
+    {
+        public void Validator(T model);
+    }
+    public class Validation<T> : IValidation<T> where T : class
     {
         private readonly IValidator<T> _requestValidator;
 
-        public Validator()
-        {
-        }
-        public Validator(IValidator<T> requestValidator)
+        public Validation(IValidator<T> requestValidator)
         {
             _requestValidator = requestValidator;
         }
 
-        public void Validations(T model) {
+        public void Validator(T model)
+        {
 
             var validation = _requestValidator.Validate(model);
+
             if (!validation.IsValid)
             {
-                var errors = validation.Errors.Select(error => new Error
+                var errors = validation.Errors.Select(i => new Error
                 {
-                    Key = Enum.EnumErrorTypes.Danger,
-                    Code = "400",
-                    Title = error.PropertyName,
-                    Description = error.ErrorMessage,
+                    Key = EnumErrorTypes.Danger,
+                    Code = i.ErrorCode,
+                    Title = i.PropertyName,
+                    Description = i.ErrorMessage,
                 }).ToList();
 
                 throw new OzelException(errors);

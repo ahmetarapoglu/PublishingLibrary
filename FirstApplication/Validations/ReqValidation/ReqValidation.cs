@@ -1,18 +1,19 @@
 ﻿using BookShop.Models.RequestModels;
+using BookShop.Services;
 using FluentValidation;
 
 namespace BookShop.Validations.ReqValidation
 {
 
-    public class DataTableReqValidation : AbstractValidator<DataTableRequest>
+    public class DataTableReqValidation : AbstractValidatorBase<DataTableRequest>
     {
         public DataTableReqValidation()
         {
             RuleFor(i => i.Current)
-                .GreaterThan(0).WithMessage("CurrentPage must be greater than 0.");
+                .GreaterThan(0).WithMessage("CurrentPage must be greater than 0.").WithErrorCode("Re-01");
 
             RuleFor(i => i.PageSize)
-                .GreaterThan(0).WithMessage("PageSize must be greater than 0.");
+                .GreaterThan(0).WithMessage("PageSize must be greater than 0.").WithErrorCode("Re-02");
         }
     }
 }

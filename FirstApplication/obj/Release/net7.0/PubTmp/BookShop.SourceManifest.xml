@@ -1,5 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<sitemanifest>
-  <IisApp path="C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\obj\Release\net7.0\PubTmp\Out\" />
-  <dbfullsql path="C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\obj\Release\net7.0\PubTmp\EFSQLScripts\BookShop.Db.AppDbContext.sql" />
-</sitemanifest>

@@ -4,13 +4,15 @@ using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.RequestModels;
 using BookShop.Seed;
+using BookShop.Services;
 using BookShop.Validations.ReqValidation;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,11 +66,14 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IRepository<Category>, GenericRepository<Category>>();
 
+builder.Services.AddScoped<IValidation<CategoryRequest>, Validation<CategoryRequest>>();
+
 #endregion
 
-#region Validator
+#region Transient
 
 builder.Services.AddTransient<IValidator<CategoryRequest>, DataTableReqValidation>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 #endregion
 
@@ -80,9 +85,6 @@ builder.Services.AddControllers();
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-
-//builder.Services.AddControllers()
-//        .AddDataAnnotationsLocalization();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -154,6 +156,20 @@ app.UseHttpsRedirection();
 // 8. Authentication
 app.UseAuthentication();
 app.UseAuthorization();
+
+
+var cacheMaxAgeOneWeek = (60 * 60 * 24 * 7).ToString();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Upload/Files")),
+    RequestPath = "/files",
+
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append(
+                "Cache-Control", $"public, max-age={cacheMaxAgeOneWeek}");
+    }
+});
 
 app.MapControllers();
 
