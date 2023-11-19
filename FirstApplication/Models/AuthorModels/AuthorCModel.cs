@@ -10,6 +10,7 @@ namespace BookShop.Models.AuthorModels
         new Author
         {
             NameSurname = model.NameSurname,
+            Image = model.Image,
             AuthorAddress = new AuthorAddress
             {
                 Country = model.AuthorAddress.Country,

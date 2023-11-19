@@ -6,6 +6,8 @@ namespace BookShop.Entities
 {
     public class User: IdentityUser<int>
     {
+        //public bool IsLocked { get; set; }
+        //public string Image { get; set; }
         public List<UserRole> UserRoles { get; set; }
 
     }

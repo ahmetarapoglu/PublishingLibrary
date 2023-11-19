@@ -59,6 +59,7 @@ namespace BookShop.Controllers
                         Title = i.Title,
                         Description = i.Description,
                         PublishedDate = i.PublishedDate,
+                        Cover = i.Cover,
                         CategoryName = i.Category.CategoryName,
                         categoryId = i.CategoryId,
                         BookAuthors = i.BookAuthors.Select(i=>new AuthorInBookModel
@@ -108,6 +109,7 @@ namespace BookShop.Controllers
                     Title = data.Title,
                     Description = data.Description,
                     PublishedDate = data.PublishedDate,
+                    Cover = data.Cover,
                     CategoryName = data.Category.CategoryName,
                     categoryId = data.CategoryId,
                     BookAuthors = data.BookAuthors.Select(i => new AuthorInBookModel
@@ -187,23 +189,13 @@ namespace BookShop.Controllers
                 book.Title = model.Title;
                 book.Description = model.Description;
                 book.PublishedDate = model.PublishedDate;
+                book.Cover = model.Cover;
                 book.CategoryId = model.CategoryId;
                 book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                 {
                     AuthorId = i.AuthorId,
                     AuhorRatio = i.AuhorRatio,
                 }).ToList();
-
-                //book.BookVersions = new List<BookVersion>
-                //{
-                //    new BookVersion
-                //    {
-                //        BookCount = model.BookVersions.BookCount,
-                //        CostPrice = model.BookVersions.CostPrice,
-                //        SellPrice = model.BookVersions.SellPrice,
-                //        LibraryRatio = model.BookVersions.LibraryRatio,
-                //    },
-                //};
 
                 _context.SaveChanges();
                 return Ok(new { status = true });

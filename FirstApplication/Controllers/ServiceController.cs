@@ -2,6 +2,7 @@
 using BookShop.Enum;
 using BookShop.Models.EmailSender;
 using BookShop.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ namespace BookShop.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ServiceController : ControllerBase
     {
         private readonly IEmailService _emailService;
@@ -92,26 +94,27 @@ namespace BookShop.Controllers
 
                 var fileName = await FileExtensions.SharpUploadFile(file,path,extension);
 
-                var sizePath = path + "resize/";
-
-                if(!Directory.Exists(sizePath))
-                    Directory.CreateDirectory(sizePath);
+                var thumbPath = path + "thumb/";
+                if(!Directory.Exists(thumbPath))
+                    Directory.CreateDirectory(thumbPath);  
 
                 if(thumbSize > 0)
                 {
-                    var newFileName ="thumb_" + fileName;
-
                     _ = await FileExtensions.SharpResizeImageAsync(
-                        path + fileName ,sizePath + newFileName , thumbSize);
+                        path + fileName , thumbPath + fileName, thumbSize);
                 }
 
-                if(imageSizeInt?.Length > 0)
+                var resizePath = path + "resize/";
+                if (!Directory.Exists(resizePath))
+                    Directory.CreateDirectory(resizePath);
+
+                if (imageSizeInt?.Length > 0)
                 {
                     foreach (var size in imageSizeInt)
                     {
                         var newFileName = size.ToString() + "_" + fileName;
                         _ = await FileExtensions.SharpResizeImageAsync(
-                            path + fileName , sizePath + newFileName ,size);
+                            path + fileName , resizePath + newFileName ,size);
                     }
                 }
 

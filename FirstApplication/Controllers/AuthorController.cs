@@ -54,6 +54,7 @@ namespace BookShop.Controllers
                 {
                     Id = i.Id,
                     NameSurname = i.NameSurname,
+                    Image = i.Image,
                     TotalAmount = 0,
                     TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
                     RemainingPayment = 0,
@@ -128,6 +129,7 @@ namespace BookShop.Controllers
                 {
                     Id = data.Id,
                     NameSurname = data.NameSurname,
+                    Image = data.Image,
                     TotalAmount = x = data.AuthorPayments.Sum(i => i.Amount),
                     TotalPayment = y = data.AuthorPayments.Sum(i => i.Amount),
                     RemainingPayment = x - y,
@@ -220,11 +222,13 @@ namespace BookShop.Controllers
                     return BadRequest(ModelState);
                 }
                 author.NameSurname = model.NameSurname;
+                author.Image = model.Image;
                 author.AuthorAddress = new AuthorAddress
                 {
                     Country = model.AuthorAddress.Country,
                     City = model.AuthorAddress.City,
                     PostCode = model.AuthorAddress.PostCode,
+                    
                 };
                 author.AuthorBiography = new AuthorBiography
                 {

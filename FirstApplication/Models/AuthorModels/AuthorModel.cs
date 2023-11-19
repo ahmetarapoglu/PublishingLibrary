@@ -9,6 +9,7 @@ namespace BookShop.Models.AuthorModels
         [Required(ErrorMessage = "AuthorName is required")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Name must be between 3 and 50 characters.")]
         public string NameSurname { get; set; }
+        public string Image { get; set; }
         public AuthorAddressModel AuthorAddress { get; set; }
         public AuthorBiographyModel AuthorBiography { get; set; }
     }
