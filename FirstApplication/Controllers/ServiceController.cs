@@ -1,7 +1,10 @@
-﻿using BookShop.Models.servicesModel;
+﻿using BookShop.Abstract;
+using BookShop.Enum;
+using BookShop.Models.EmailSender;
 using BookShop.Services;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace BookShop.Controllers
 {
@@ -9,27 +12,22 @@ namespace BookShop.Controllers
     [ApiController]
     public class ServiceController : ControllerBase
     {
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailService;
 
-        public ServiceController(IEmailSender emailSender)
+        public ServiceController(IEmailService emailService)
         {
-            _emailSender = emailSender;
+            _emailService = emailService;
         }
 
+
         [HttpPost]
-        [Route("SendMessage")]
-        public async Task<IActionResult> SendMessage(SenMessageModel model)
+        [Route("[action]")]
+        public async Task<IActionResult> SendMessage(EmailRequest model)
         {
             try
             {
-                if (model.Id <= 0)
-                {
-                    throw new OzelException(ErrorProvider.NotValid);
-                }
-
-                await _emailSender.SendEmailAsync(model.Whom, model.Subject, model.Message);
-
-                return Ok();
+                await _emailService.SendEmailAsync(model);
+                return Ok("Email sent successfully");
             }
             catch (OzelException ex)
             {
@@ -42,7 +40,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("UploadFile")]
+        [Route("[action]")]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
 
@@ -53,18 +51,18 @@ namespace BookShop.Controllers
                 var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
                 filename = DateTime.Now.Ticks.ToString() + extension;
 
-                var filepath = Path.Combine(Directory.GetCurrentDirectory(), "Upload\\Files");
+                var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files");
 
                 if (!Directory.Exists(filepath))
-                {
                     Directory.CreateDirectory(filepath);
-                }
 
-                var exactpath = Path.Combine(Directory.GetCurrentDirectory(), "Upload\\Files", filename);
+                var exactpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files", filename);
+
                 using (var stream = new FileStream(exactpath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
+
                 return Ok(filename);
             }
             catch (Exception ex)
@@ -73,8 +71,58 @@ namespace BookShop.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SharpUploadFile(
+            IFormFile file,
+            int thumbSize,
+            string imageSize,
+            EnumFileExtension extension = EnumFileExtension.Webp)
+        {
+            try
+            {
+                int[] imageSizeInt = JsonConvert.DeserializeObject<int[]>(imageSize ?? "[]")!;
+
+                var path = "wwwroot/Upload/Imagess/";
+
+                if (!file.ContentType.Contains("image")) {
+                    throw new OzelException(ErrorProvider.NotValid);
+                }
+
+                var fileName = await FileExtensions.SharpUploadFile(file,path,extension);
+
+                var sizePath = path + "thumb/";
+
+                if(!Directory.Exists(sizePath))
+                    Directory.CreateDirectory(sizePath);
+
+                if(thumbSize > 0)
+                {
+                    _ = await FileExtensions.SharpResizeImageAsync(
+                        path + fileName ,sizePath + fileName , thumbSize);
+                }
+
+                if(imageSizeInt?.Length > 0)
+                {
+                    foreach (var size in imageSizeInt)
+                    {
+                        var newFileName = size.ToString() + "_" + fileName;
+                        _ = await FileExtensions.SharpResizeImageAsync(
+                            path + fileName , sizePath + newFileName ,size);
+                    }
+                }
+
+                return Ok(fileName);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
         [HttpDelete]
-        [Route("DeleteFile")]
+        [Route("[action]")]
         public IActionResult DeleteFile(string fileName)
         {
             try
@@ -82,7 +130,6 @@ namespace BookShop.Controllers
                 var path = $"{"Upload"}/{"Files"}";
 
                 var res = FileExtensions.Delete(path, fileName);
-
 
                 return Ok(res);
             }

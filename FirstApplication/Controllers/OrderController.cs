@@ -25,7 +25,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("GetOrders")]
+        [Route("[action]")]
         public async Task<IActionResult> GetOrders(OrderRequest model)
         {
             try
@@ -64,7 +64,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("GetOrder/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> GetOrder(int id)
         {
             try
@@ -98,7 +98,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateOrder")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateOrder(OrderCModel model)
         {
             try
@@ -119,7 +119,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [HttpPost]
-        [Route("UpdateOrder")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateOrder(OrderUModel model)
         {
             try
@@ -156,7 +156,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteOrder")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
             try

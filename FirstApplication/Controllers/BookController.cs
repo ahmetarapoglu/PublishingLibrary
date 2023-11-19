@@ -27,7 +27,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("GetBooks")]
+        [Route("[action]")]
         public async Task<IActionResult> GetBooks(BookRequest model)
         {
             var dtrValidation = new DataTableReqValidation();
@@ -91,7 +91,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("GetBook/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> GetBook(int id)
         {
             try
@@ -138,7 +138,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateBook")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateBook(BookCModel model)
         {
             try
@@ -159,7 +159,7 @@ namespace BookShop.Controllers
        
         [HttpPost]
         [HttpPut]
-        [Route("UpdateBook")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateBook(BookUModel model)
         {
 
@@ -215,7 +215,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteBook")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteBook(int id)
         {
             try

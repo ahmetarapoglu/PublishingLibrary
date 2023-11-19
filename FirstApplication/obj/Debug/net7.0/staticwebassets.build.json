@@ -1,12 +1,20 @@
 {
   "Version": 1,
-  "Hash": "0sfs7XtkUaldQ49KJQVrvTsOnlVTFNjafe/aufV1GTk=",
+  "Hash": "12bQ4elOqJ5mNVLA+GLFk7U8qDtlwv3oyp2r+gNNFRs=",
   "Source": "BookShop",
   "BasePath": "_content/BookShop",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "BookShop\\wwwroot",
+      "Source": "BookShop",
+      "ContentRoot": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "Pattern": "**"
+    }
+  ],
   "Assets": [
     {
       "Identity": "C:\\Users\\ihab\\.nuget\\packages\\microsoft.aspnetcore.identity.ui\\7.0.13\\staticwebassets\\V5\\css\\site.css",

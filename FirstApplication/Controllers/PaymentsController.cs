@@ -21,7 +21,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("PayToAuthor")]
+        [Route("[action]")]
         public async Task<IActionResult> PayToAuthor(AuthorPaymentCModel model)
         {
             try
@@ -39,7 +39,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CollectionFromBranch")]
+        [Route("[action]")]
         public async Task<IActionResult> CollectionFromBranch(BranchPaymentCModel model)
         {
             try
@@ -57,7 +57,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("AccountActivities")]
+        [Route("[action]")]
         public async Task<IActionResult> AccountActivities()
         {
             try
@@ -96,7 +96,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("Till")]
+        [Route("[action]")]
         public async Task<IActionResult> Till()
         {
             try

@@ -24,7 +24,7 @@ namespace BookShop.Controllers
 
 
         [HttpPost]
-        [Route("GetInvoices")]
+        [Route("[action]")]
         public async Task<IActionResult> GetInvoices(InvoiceRequest model)
         {
             try
@@ -61,7 +61,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("GetInvoice/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> GetInvoice(int id)
         {
             try
@@ -93,7 +93,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateInvoice")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateInvoice(InvoiceCModel model)
         {
             try
@@ -120,7 +120,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateInvoice")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateInvoice(InvoiceUModel model)
         {
             try
@@ -150,7 +150,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteInvoice")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteInvoice(int id)
         {
             try

@@ -27,7 +27,7 @@ namespace BookShop.Controllers
 
 
         [HttpPost]
-        [Route("GetBranches")]
+        [Route("[action]")]
         public async Task<IActionResult> GetBranches(BranchRequest model)
         {
 
@@ -73,7 +73,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("GetBranch/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> GetBranch(int id)
         {
             try
@@ -108,7 +108,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateBranch")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateBranch(BranchCModel model)
         {
             try
@@ -130,7 +130,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [HttpPost]
-        [Route("UpdateBranch")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateBranch(BranchUModel model)
         {
             try
@@ -165,7 +165,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteBranch")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteBranch(int id)
         {
             try

@@ -2,6 +2,7 @@ using BookShop.Abstract;
 using BookShop.Concreate;
 using BookShop.Db;
 using BookShop.Entities;
+using BookShop.Models.EmailSender;
 using BookShop.Models.RequestModels;
 using BookShop.Seed;
 using BookShop.Services;
@@ -9,7 +10,6 @@ using BookShop.Validations.ReqValidation;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,18 +17,25 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
+var service = builder.Services;
 
+#region DatabaseConnection
 
 // 1. DbContext
 builder.Services.AddDbContext<AppDbContext>();
 
+#endregion
+
 #region Identity
 
 // 2. Identity
-builder.Services.AddIdentity<User, Role>(c =>
+builder.Services.AddIdentity<User, Role>(p =>
 {
-    c.Password.RequiredLength = 8;
-    c.Password.RequireNonAlphanumeric = true;
+    p.Password.RequiredLength = 8;
+    p.Password.RequireNonAlphanumeric = true;
+    p.Password.RequireDigit = true;
+    p.Password.RequireLowercase = true;
+    p.Password.RequireUppercase = true;
 })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders()
@@ -37,6 +44,8 @@ builder.Services.AddIdentity<User, Role>(c =>
 
 
 #endregion
+
+#region Jwt
 
 // 3. Adding Authentication
 builder.Services.AddAuthentication(options =>
@@ -47,19 +56,21 @@ builder.Services.AddAuthentication(options =>
 })
 
 // 4. Adding Jwt Bearer
-    .AddJwtBearer(options =>
+.AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
     {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters = new TokenValidationParameters()
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidAudience = configuration["JWT:ValidAudience"],
-            ValidIssuer = configuration["JWT:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
-        };
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = configuration["JWT:ValidAudience"],
+        ValidIssuer = configuration["JWT:ValidIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
+    };
+});
+
+#endregion
 
 #region Scoped
 
@@ -70,27 +81,38 @@ builder.Services.AddScoped<IValidation<CategoryRequest>, Validation<CategoryRequ
 
 #endregion
 
-#region Transient
+#region Validations
 
 builder.Services.AddTransient<IValidator<CategoryRequest>, DataTableReqValidation>();
-builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 #endregion
 
+#region EmailSender
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
+
+#endregion
+
+#region Controller
+
 builder.Services.AddControllers();
-
-
 
 //Add Service To the container.
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 
+#endregion
+
+#region Swagger
+
+// 5. Swagger authentication
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 
-// 5. Swagger authentication
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Wedding Planner API", Version = "v1" });
@@ -115,6 +137,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+#endregion
 
 #region Cors
 
@@ -134,8 +157,10 @@ builder.Services.AddCors(options =>
                 .WithMethods("POST","GET","PUT","DELETE");
         });
 });
+
 #endregion
 
+#region Builder
 var app = builder.Build();
 
 //Configure the HTTP request pipeline.
@@ -145,24 +170,22 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-//await DbInitializer.InitializerAsync(app);
-//app.UseSwagger();
-//app.UseSwaggerUI();
 
 //7. Use CORS
 app.UseCors("AllowAngularDevClient");
+
 app.UseHttpsRedirection();
 
 // 8. Authentication
 app.UseAuthentication();
-app.UseAuthorization();
 
+app.UseAuthorization();
 
 var cacheMaxAgeOneWeek = (60 * 60 * 24 * 7).ToString();
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "Upload/Files")),
-    RequestPath = "/files",
+    //FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "wwwroot/Upload/Files")),
+    //RequestPath = "/files",
 
     OnPrepareResponse = ctx =>
     {
@@ -172,5 +195,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.MapControllers();
+
+#endregion
 
 app.Run();

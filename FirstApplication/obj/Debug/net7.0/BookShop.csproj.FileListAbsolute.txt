@@ -307,3 +307,4 @@ C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\obj\Debu
 C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\obj\Debug\net7.0\BookShop.pdb
 C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\obj\Debug\net7.0\BookShop.genruntimeconfig.cache
 C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\obj\Debug\net7.0\ref\BookShop.dll
+C:\Users\ihab\Desktop\GitHub\PublishingLibrary_BackEnd\FirstApplication\bin\Debug\net7.0\SixLabors.ImageSharp.dll

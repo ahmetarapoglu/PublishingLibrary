@@ -23,7 +23,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("GetVersions")]
+        [Route("[action]")]
         public async Task<IActionResult> GetVersions(VersionRequest model)
         {
 
@@ -69,7 +69,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("GetVersion/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> GetVersion(int id)
         {
             try
@@ -98,7 +98,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateVersion")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateVersion(BookVersionCModel model)
         {
             try
@@ -137,7 +137,7 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [HttpPut]
-        [Route("UpdateVersion")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateVersion(BookVersionUModel model)
         {
 
@@ -174,7 +174,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteVersion")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteVersion(int id)
         {
             try

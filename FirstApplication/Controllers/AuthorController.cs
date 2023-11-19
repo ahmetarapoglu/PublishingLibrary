@@ -26,7 +26,7 @@ namespace BookShop.Controllers
 
 
         [HttpPost]
-        [Route("GetAuthors")]
+        [Route("[action]")]
         public async Task<IActionResult> GetAuthors(AuthorRequest model)
         {
 
@@ -175,7 +175,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateAuthor")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateAuthor(AuthorCModel model)
         {
             try
@@ -197,7 +197,7 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [HttpPut]
-        [Route("UpdateAuthor")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateAuthor(AuthorUModel model)
         {
             try
@@ -243,7 +243,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteAuthor")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteAuthor(int id)
         {
             try

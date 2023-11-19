@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "yN97Yc8hy8s35OzYPXMLo+7IIHTiITsiMbaeF5cPaOKET+iGiHPINb7eVquYULwacmymFdr+icLRIwsiByX/hA==",
+  "dgSpecHash": "1FH2tBN1xPmLD2RBxMHC4rNSy0Cr8Cw9kF9tQinivV0OI0FzqxKi/5NHF88h4KUZg3kOIpjGKjCk+ZNq3CpNwA==",
   "success": true,
   "projectFilePath": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\BookShop.csproj",
   "expectedPackageFiles": [
@@ -169,6 +169,7 @@
     "C:\\Users\\ihab\\.nuget\\packages\\runtime.win-arm64.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-arm64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
     "C:\\Users\\ihab\\.nuget\\packages\\runtime.win-x64.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-x64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
     "C:\\Users\\ihab\\.nuget\\packages\\runtime.win-x86.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-x86.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
+    "C:\\Users\\ihab\\.nuget\\packages\\sixlabors.imagesharp\\3.0.2\\sixlabors.imagesharp.3.0.2.nupkg.sha512",
     "C:\\Users\\ihab\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.4\\sqlitepclraw.bundle_e_sqlite3.2.1.4.nupkg.sha512",
     "C:\\Users\\ihab\\.nuget\\packages\\sqlitepclraw.core\\2.1.4\\sqlitepclraw.core.2.1.4.nupkg.sha512",
     "C:\\Users\\ihab\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.4\\sqlitepclraw.lib.e_sqlite3.2.1.4.nupkg.sha512",

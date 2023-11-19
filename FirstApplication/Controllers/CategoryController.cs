@@ -30,7 +30,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("GetCategories")]
+        [Route("[action]")]
         public async Task<IActionResult> GetCategories(CategoryRequest model)
         {
             try
@@ -92,7 +92,7 @@ namespace BookShop.Controllers
         }
 
         [HttpGet]
-        [Route("GetCategory/{id}")]
+        [Route("[action]/{id}")]
         public async Task<IActionResult> GetCategory(int id)
         {
             try
@@ -119,7 +119,7 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [Route("CreateCategory")]
+        [Route("[action]")]
         public async Task<IActionResult> CreateCategory(CategoryCModel model)
         {
             try
@@ -150,7 +150,7 @@ namespace BookShop.Controllers
 
         [HttpPut]
         [HttpPost]
-        [Route("UpdateCategory")]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateCategory(CategoryUModel model)
         {
             try
@@ -182,7 +182,7 @@ namespace BookShop.Controllers
         }
 
         [HttpDelete]
-        [Route("DeleteCategory")]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             try
