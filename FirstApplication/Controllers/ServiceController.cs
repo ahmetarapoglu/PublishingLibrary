@@ -5,6 +5,7 @@ using BookShop.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace BookShop.Controllers
 {
@@ -83,7 +84,7 @@ namespace BookShop.Controllers
             {
                 int[] imageSizeInt = JsonConvert.DeserializeObject<int[]>(imageSize ?? "[]")!;
 
-                var path = "wwwroot/Upload/Imagess/";
+                var path = "wwwroot/Upload/Images/";
 
                 if (!file.ContentType.Contains("image")) {
                     throw new OzelException(ErrorProvider.NotValid);
@@ -91,15 +92,17 @@ namespace BookShop.Controllers
 
                 var fileName = await FileExtensions.SharpUploadFile(file,path,extension);
 
-                var sizePath = path + "thumb/";
+                var sizePath = path + "resize/";
 
                 if(!Directory.Exists(sizePath))
                     Directory.CreateDirectory(sizePath);
 
                 if(thumbSize > 0)
                 {
+                    var newFileName ="thumb_" + fileName;
+
                     _ = await FileExtensions.SharpResizeImageAsync(
-                        path + fileName ,sizePath + fileName , thumbSize);
+                        path + fileName ,sizePath + newFileName , thumbSize);
                 }
 
                 if(imageSizeInt?.Length > 0)
@@ -114,7 +117,11 @@ namespace BookShop.Controllers
 
                 return Ok(fileName);
             }
-            catch(Exception ex)
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -123,14 +130,14 @@ namespace BookShop.Controllers
 
         [HttpDelete]
         [Route("[action]")]
-        public IActionResult DeleteFile(string fileName)
+        public IActionResult DeleteFile(string fileName , EnumFileType fileType = EnumFileType.Image)
         {
             try
             {
-                var path = $"{"Upload"}/{"Files"}";
+                var path = "wwwroot/Upload";
+                path = fileType == EnumFileType.Image ? path + "/Images" : path + "/Files";
 
                 var res = FileExtensions.Delete(path, fileName);
-
                 return Ok(res);
             }
             catch (Exception ex)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp.Formats.Webp;
+using System.IO;
 
 namespace BookShop.Services
 {
@@ -35,6 +36,10 @@ namespace BookShop.Services
                     targetFileName += ext;
                     await image.SaveAsPngAsync(targetPath + targetFileName);
                 }
+
+                image.Dispose();
+                string path = sourcePath + sourceFileName;
+                if(File.Exists(path)) File.Delete(path);
 
                 return targetFileName;
             }catch (Exception ex) { 
@@ -102,7 +107,8 @@ namespace BookShop.Services
         {
             try
             {
-                var path = folderName +"/"+ fileName;
+                var path = folderName + "/" + fileName;
+
                 bool result = false;
 
                 if (File.Exists(path))

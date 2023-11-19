@@ -112,9 +112,14 @@ namespace BookShop.Controllers
 
                 return Ok(category);
             }
+
             catch (OzelException ex)
             {
                 return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
@@ -175,6 +180,10 @@ namespace BookShop.Controllers
 
                 return Ok(new { status = true });
             }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -192,6 +201,10 @@ namespace BookShop.Controllers
 
                 await _categoryrepository.DeleteAsync(filter);
                 return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {

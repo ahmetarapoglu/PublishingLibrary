@@ -10,7 +10,6 @@ using BookShop.Validations.ReqValidation;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -148,13 +147,13 @@ builder.Services.AddCors(options =>
         b =>
         {
             b
-                 //.WithOrigins("https://nextauth-sage.vercel.app")
-                 //.WithOrigins("https://bookshop-theta.vercel.app")
+                //.WithOrigins("https://nextauth-sage.vercel.app")
+                //.WithOrigins("https://bookshop-theta.vercel.app")
                 .WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                 .AllowCredentials()
                 .AllowAnyMethod()
-                .WithMethods("POST","GET","PUT","DELETE");
+                .WithMethods("POST", "GET", "PUT", "DELETE");
         });
 });
 
