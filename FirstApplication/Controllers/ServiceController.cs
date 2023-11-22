@@ -131,7 +131,6 @@ namespace BookShop.Controllers
             }
         }
 
-
         [HttpDelete]
         [Route("[action]")]
         public IActionResult DeleteFile(string fileName , EnumFileType fileType = EnumFileType.Image)
@@ -149,5 +148,6 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
     }
 }
