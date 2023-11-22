@@ -86,13 +86,14 @@ namespace BookShop.Controllers
             {
                 int[] imageSizeInt = JsonConvert.DeserializeObject<int[]>(imageSize ?? "[]")!;
 
-                var path = "wwwroot/Upload/Images/";
+                var path = "wwwroot/Upload/Files/";
+             
+                var fileName = await FileExtensions.SharpUploadFile(file, path, extension);
 
-                if (!file.ContentType.Contains("image")) {
-                    throw new OzelException(ErrorProvider.NotValid);
+                if (!file.ContentType.Contains("image"))
+                {
+                    return Ok(fileName);
                 }
-
-                var fileName = await FileExtensions.SharpUploadFile(file,path,extension);
 
                 var thumbPath = path + "thumb/";
                 if(!Directory.Exists(thumbPath))

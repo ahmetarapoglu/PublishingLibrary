@@ -1,40 +1,24 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638360440124634174.pdf",
-      "PackagePath": "staticwebassets\\Upload\\Files\\638360440124634174.pdf"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\638362891047332219.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Images\\638362891047332219.Webp"
     },
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\638360438500458127.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\638360438500458127.Webp"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\638362891779927030.pdf",
+      "PackagePath": "staticwebassets\\Upload\\Images\\638362891779927030.pdf"
     },
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\638360438667304799.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\638360438667304799.Webp"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\638362892244695840.pdf",
+      "PackagePath": "staticwebassets\\Upload\\Images\\638362892244695840.pdf"
     },
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\resize\\720_638360438500458127.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\resize\\720_638360438500458127.Webp"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\resize\\720_638362891047332219.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Images\\resize\\720_638362891047332219.Webp"
     },
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\resize\\720_638360438667304799.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\resize\\720_638360438667304799.Webp"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\resize\\992_638360438500458127.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\resize\\992_638360438500458127.Webp"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\resize\\992_638360438667304799.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\resize\\992_638360438667304799.Webp"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\thumb\\638360438500458127.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\thumb\\638360438500458127.Webp"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\thumb\\638360438667304799.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Images\\thumb\\638360438667304799.Webp"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Images\\thumb\\638362891047332219.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Images\\thumb\\638362891047332219.Webp"
     },
     {
       "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.BookShop.Microsoft.AspNetCore.StaticWebAssets.props",

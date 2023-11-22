@@ -60,18 +60,32 @@ namespace BookShop.Services
 
                 string fileName = DateTime.Now.Ticks.ToString();
 
-                var tempPath = path + "temp/";
-                var tempFileName = fileName + extensionFile;
-                var tempFilePath = tempPath + tempFileName;
+                //image
+                if (formFile.ContentType.Contains("image"))
+                {
+                    var tempPath = path + "temp/";
+                    var tempFileName = fileName + extensionFile;
+                    var tempFilePath = tempPath + tempFileName;
 
-                if(!Directory.Exists (tempPath))
-                    Directory.CreateDirectory (tempPath);
+                    if (!Directory.Exists(tempPath))
+                        Directory.CreateDirectory(tempPath);
 
-                using var stream = File.OpenWrite (tempFilePath);
-                await formFile.CopyToAsync (stream);
-                stream.Close();
+                    using var stream = File.OpenWrite(tempFilePath);
+                    await formFile.CopyToAsync(stream);
+                    stream.Close();
 
-                fileName = await SharpSaveFile(tempPath,path,tempFileName,extension);
+                    fileName = await SharpSaveFile(tempPath, path, tempFileName, extension);
+                }
+                else
+                {
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+
+                    fileName += extensionFile;
+                    using var stream = File.OpenWrite(path + fileName);
+                    await formFile.CopyToAsync(stream);
+                    stream.Close();
+                }
 
                 return fileName;
             }catch (Exception ex)
