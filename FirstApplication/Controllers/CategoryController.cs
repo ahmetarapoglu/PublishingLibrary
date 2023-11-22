@@ -39,7 +39,7 @@ namespace BookShop.Controllers
                 _validate.Validator(model);
 
                 //Where.
-                Expression<Func<Category, bool>> filter = Category => true;
+                Expression<Func<Category, bool>> filter = i => true;
 
                 //Date(Filter).
                 if (model.StartDate != null)
@@ -53,7 +53,7 @@ namespace BookShop.Controllers
                     filter = filter.And(i => i.CategoryName.Contains(model.Search));
 
                 //Include.
-                static IIncludableQueryable<Category, object> include(IQueryable<Category> query) => query.Include(i => i.Books);
+                //static IIncludableQueryable<Category, object> include(IQueryable<Category> query) => query.Include(i => i.Books);
 
                 //Sort.
                 Expression<Func<Category, object>> Order = model.Order switch
@@ -77,7 +77,7 @@ namespace BookShop.Controllers
                     CreateDate = entity.CreateDate,
                 });
 
-                var (total, data) = await _categoryrepository.GetListAndTotalAsync(select, filter, include, orderBy, skip: model.Skip, take: model.Take);
+                var (total, data) = await _categoryrepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
 
                 return Ok(new { data, total });
             }
@@ -178,7 +178,7 @@ namespace BookShop.Controllers
 
                 await _categoryrepository.UpdateAsync(entity);
 
-                return Ok(new { status = true });
+                return Ok();
             }
             catch (OzelException ex)
             {

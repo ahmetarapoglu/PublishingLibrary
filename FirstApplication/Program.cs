@@ -75,6 +75,13 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IRepository<Category>, GenericRepository<Category>>();
+builder.Services.AddScoped<IRepository<Author>, GenericRepository<Author>>();
+builder.Services.AddScoped<IRepository<Book>, GenericRepository<Book>>();
+builder.Services.AddScoped<IRepository<Branch>, GenericRepository<Branch>>();
+builder.Services.AddScoped<IRepository<Invoice>, GenericRepository<Invoice>>();
+builder.Services.AddScoped<IRepository<Order>, GenericRepository<Order>>();
+builder.Services.AddScoped<IRepository<User>, GenericRepository<User>>();
+builder.Services.AddScoped<IRepository<BookVersion>, GenericRepository<BookVersion>>();
 
 builder.Services.AddScoped<IValidation<CategoryRequest>, Validation<CategoryRequest>>();
 

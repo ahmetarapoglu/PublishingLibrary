@@ -1,15 +1,21 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
+using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.BookVersionModels;
+using BookShop.Models.CategoryModels;
 using BookShop.Models.RequestModels;
+using BookShop.Services;
 using BookShop.Validations.ReqValidation;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System;
+using System.Linq.Expressions;
 
 namespace BookShop.Controllers
 {
@@ -18,10 +24,11 @@ namespace BookShop.Controllers
     [Authorize]
     public class AuthorController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public AuthorController(AppDbContext context)
+        private readonly IRepository<Author> _authorepository;
+
+        public AuthorController( IRepository<Author> authorepository)
         {
-            _context = context;
+            _authorepository = authorepository;
         }
 
 
@@ -32,69 +39,90 @@ namespace BookShop.Controllers
 
             try
             {
-                var authors = await _context.Authors
-                    .Include(i => i.AuthorAddress)
-                    .Include(i => i.AuthorBiography)
-                    .Include(i => i.BookAuthors)
-                    .ThenInclude(i => i.Book)
-                    .ThenInclude(i => i.BookVersions)
-                    .ThenInclude(i => i.Orders)
-                    .Include(i => i.BookAuthors)
-                    .ThenInclude(i => i.Book)
-                    .ThenInclude(i => i.Category)
-                    .Include(i => i.AuthorPayments)
-                    .Where(i => i.NameSurname.Contains(model.Search))
-                    .OrderByDescending(i => i.Id)
-                    .ToListAsync();
+                //Where.
+                Expression<Func<Author, bool>> filter = i => true;
 
-                var data = authors
-                .Skip(model.Skip)
-                .Take(model.Take)
-                .Select(i => new AuthorRModel
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
+
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Search.
+                if (!string.IsNullOrEmpty(model.Search))
+                    filter = filter.And(i => i.NameSurname.Contains(model.Search));
+
+                //Include.
+                //static IIncludableQueryable<Author, object> include(IQueryable<Author> query) => query.Include(i => i.Books);
+
+                //Sort.
+                Expression<Func<Author, object>> Order = model.Order switch
                 {
-                    Id = i.Id,
-                    NameSurname = i.NameSurname,
-                    Image = i.Image,
-                    TotalAmount = 0,
-                    TotalPayment = i.AuthorPayments.Sum(i => i.Amount),
-                    RemainingPayment = 0,
-                    AuthorAddress = new AuthorAddressModel
+                    "id" => i => i.Id,
+                    "nameSurname" => i => i.NameSurname,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<Author> orderBy(IQueryable<Author> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select.
+                static IQueryable<AuthorRModel> select(IQueryable<Author> query) => query
+                    .Select(entity => new AuthorRModel
                     {
-                        Country = i.AuthorAddress.Country,
-                        City = i.AuthorAddress.City,
-                        PostCode = i.AuthorAddress.PostCode,
-                    },
-                    AuthorBiography = new AuthorBiographyModel
-                    {
-                        Email = i.AuthorBiography.Email,
-                        PhoneNumber = i.AuthorBiography.PhoneNumber,
-                        NativeLanguage = i.AuthorBiography.NativeLanguage,
-                        Education = i.AuthorBiography.Education
-                    },
-                    Books = i.BookAuthors.Select(i => new BookInAuthors
-                    {
-                        Id = i.Book.Id,
-                        Title = i.Book.Title,
-                        Description = i.Book.Description,
-                        PublishedDate = i.Book.PublishedDate,
-                        CategoryName = i.Book.Category.CategoryName,
-                        BookVersions = i.Book.BookVersions.Select(i =>
-                        new BookVersionRModel
+                        Id = entity.Id,
+                        NameSurname = entity.NameSurname,
+                        Image = entity.Image,
+                        TotalAmount = entity.AuthorPayments.Sum(i => i.Amount),
+                        TotalPayment = entity.AuthorPayments.Sum(i => i.Amount),
+                        RemainingPayment = entity.AuthorPayments.Sum(i => i.Amount) - entity.AuthorPayments.Sum(i => i.Amount),
+                        AuthorAddress = new AuthorAddressModel
                         {
-                            Id = i.Id,
-                            Number = i.Number,
-                            BookCount = i.BookCount,
-                            CostPrice = i.CostPrice,
-                            TotalCostPrice = i.CostPrice * i.BookCount,
-                            SellPrice = i.SellPrice,
-                            TotalSellPrice = i.SellPrice * i.BookCount,
-                            LibraryRatio = i.LibraryRatio,
-                        }).ToList()
-                    }).ToList(),
-                });
+                            Country = entity.AuthorAddress.Country,
+                            City = entity.AuthorAddress.City,
+                            PostCode = entity.AuthorAddress.PostCode,
+                        },
+                        AuthorBiography = new AuthorBiographyModel
+                        {
+                            Email = entity.AuthorBiography.Email,
+                            PhoneNumber = entity.AuthorBiography.PhoneNumber,
+                            NativeLanguage = entity.AuthorBiography.NativeLanguage,
+                            Education = entity.AuthorBiography.Education
+                        },
+                        Books = entity.BookAuthors.Select(i => new BookInAuthors
+                        {
+                            Id = i.Book.Id,
+                            Title = i.Book.Title,
+                            Description = i.Book.Description,
+                            PublishedDate = i.Book.PublishedDate,
+                            CategoryName = i.Book.Category.CategoryName,
+                            BookVersions = i.Book.BookVersions.Select(i =>
+                            new BookVersionRModel
+                            {
+                                Id = i.Id,
+                                Number = i.Number,
+                                BookCount = i.BookCount,
+                                CostPrice = i.CostPrice,
+                                TotalCostPrice = i.CostPrice * i.BookCount,
+                                SellPrice = i.SellPrice,
+                                TotalSellPrice = i.SellPrice * i.BookCount,
+                                LibraryRatio = i.LibraryRatio,
+                            }).ToList()
+                        }).ToList(),
+                    });
 
+                var (total, data) = await _authorepository.GetListAndTotalAsync(select, filter,null, orderBy, skip: model.Skip, take: model.Take);
 
-                return Ok(new {total = authors.Count, data });
+                return Ok(new { data, total });
+
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -108,46 +136,32 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Authors
-                    .Include(i => i.AuthorAddress)
-                    .Include(i => i.AuthorBiography)
-                    .Include(i => i.BookAuthors)
-                    .ThenInclude(i => i.Book)
-                    .ThenInclude(i => i.BookVersions)
-                    .ThenInclude(i => i.Orders)
-                    .Include(i => i.BookAuthors)
-                    .ThenInclude(i => i.Book)
-                    .ThenInclude(i => i.Category)
-                    .Include(i => i.AuthorPayments)
-                    .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Author With this id :{id} Not Found!.");
+                //Where
+                Expression<Func<Author, bool>> filter = i => i.Id == id;
 
-                var order = await _context.Orders.Include(i => i.BookVersion).Select(i => i.Id).ToListAsync();
-
-                var x = 0m;
-                var y = 0m;
-                var author = new AuthorRModel
+                //Select
+                static IQueryable<AuthorRModel> select(IQueryable<Author> query) => query.Select(entity => new AuthorRModel
                 {
-                    Id = data.Id,
-                    NameSurname = data.NameSurname,
-                    Image = data.Image,
-                    TotalAmount = x = data.AuthorPayments.Sum(i => i.Amount),
-                    TotalPayment = y = data.AuthorPayments.Sum(i => i.Amount),
-                    RemainingPayment = x - y,
+                    Id = entity.Id,
+                    NameSurname = entity.NameSurname,
+                    Image = entity.Image,
+                    TotalAmount = entity.AuthorPayments.Sum(i => i.Amount),
+                    TotalPayment = entity.AuthorPayments.Sum(i => i.Amount),
+                    RemainingPayment = entity.AuthorPayments.Sum(i => i.Amount) - entity.AuthorPayments.Sum(i => i.Amount),
                     AuthorAddress = new AuthorAddressModel
                     {
-                        Country = data.AuthorAddress.Country,
-                        City = data.AuthorAddress.City,
-                        PostCode = data.AuthorAddress.PostCode,
+                        Country = entity.AuthorAddress.Country,
+                        City = entity.AuthorAddress.City,
+                        PostCode = entity.AuthorAddress.PostCode,
                     },
                     AuthorBiography = new AuthorBiographyModel
                     {
-                        Email = data.AuthorBiography.Email,
-                        PhoneNumber = data.AuthorBiography.PhoneNumber,
-                        NativeLanguage = data.AuthorBiography.NativeLanguage,
-                        Education = data.AuthorBiography.Education
+                        Email = entity.AuthorBiography.Email,
+                        PhoneNumber = entity.AuthorBiography.PhoneNumber,
+                        NativeLanguage = entity.AuthorBiography.NativeLanguage,
+                        Education = entity.AuthorBiography.Education
                     },
-
-                    Books = data.BookAuthors.Select(i => new BookInAuthors
+                    Books = entity.BookAuthors.Select(i => new BookInAuthors
                     {
                         Id = i.Book.Id,
                         Title = i.Book.Title,
@@ -167,8 +181,16 @@ namespace BookShop.Controllers
                             LibraryRatio = i.LibraryRatio,
                         }).ToList()
                     }).ToList()
-                };
+
+                });
+
+                var author = await _authorepository.FindAsync(select, filter);
+
                 return Ok(author);
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -187,9 +209,32 @@ namespace BookShop.Controllers
                     return BadRequest(ModelState);
                 }
 
-                _context.Add(AuthorCModel.Fill(model));
-                 _context.SaveChanges();
-                return Ok(new { status = true });
+                var entity = new Author
+                {
+                    NameSurname = model.NameSurname,
+                    Image = model.Image,
+                    AuthorAddress = new AuthorAddress
+                    {
+                        Country = model.AuthorAddress.Country,
+                        City = model.AuthorAddress.City,
+                        PostCode = model.AuthorAddress.PostCode
+                    },
+                    AuthorBiography = new AuthorBiography
+                    {
+                        Email = model.AuthorBiography.Email,
+                        PhoneNumber = model.AuthorBiography.PhoneNumber,
+                        NativeLanguage = model.AuthorBiography.NativeLanguage,
+                        Education = model.AuthorBiography.Education
+                    }
+                };
+
+                await _authorepository.AddAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -205,40 +250,43 @@ namespace BookShop.Controllers
             try
             {
                 if (model.Id == 0 || model.Id == null)
-                {
                     throw new Exception("Reauested Author Not Found!.");
-                }
-                var author = await _context.Authors
-                    .Include(i => i.AuthorAddress)
-                    .Include(i => i.AuthorBiography)
-                    .FirstOrDefaultAsync(i => i.Id == model.Id);
+                
 
-                if (author == null)
-                {
-                    throw new Exception("Requested Author Not Found!.");
-                }
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
-                author.NameSurname = model.NameSurname;
-                author.Image = model.Image;
-                author.AuthorAddress = new AuthorAddress
+               
+
+                //Where
+                Expression<Func<Author, bool>> filter = i => i.Id == model.Id;
+
+                var entity = await _authorepository.FindAsync(filter);
+
+
+                entity!.NameSurname = model.NameSurname;
+                entity.Image = model.Image;
+                entity.AuthorAddress = new AuthorAddress
                 {
                     Country = model.AuthorAddress.Country,
                     City = model.AuthorAddress.City,
                     PostCode = model.AuthorAddress.PostCode,
                     
                 };
-                author.AuthorBiography = new AuthorBiography
+                entity.AuthorBiography = new AuthorBiography
                 {
                     Email = model.AuthorBiography.Email,
                     PhoneNumber = model.AuthorBiography.PhoneNumber,
                     NativeLanguage = model.AuthorBiography.NativeLanguage,
                     Education = model.AuthorBiography.Education
                 };
-                _context.SaveChanges();
-                return Ok(new { status = true });
+
+                await _authorepository.UpdateAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -252,10 +300,15 @@ namespace BookShop.Controllers
         {
             try
             {
-                var author = await _context.Authors.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Author whith this ID:{id} Nof Found!.");
-                _context.Authors.Remove(author);
-                await _context.SaveChangesAsync();
-                return Ok("Author Removed Successfuly!.");
+                //Where
+                Expression<Func<Author, bool>> filter = i => i.Id == id;
+
+                await _authorepository.DeleteAsync(filter);
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {

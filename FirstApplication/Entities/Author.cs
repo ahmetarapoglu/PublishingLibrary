@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using BookShop.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace BookShop.Entities
 {
-    public class Author
+    public class Author : BaseEntity
     {
-        public int Id { get; set; }
         public string NameSurname { get; set; }
         public string Image { get; set; }
 

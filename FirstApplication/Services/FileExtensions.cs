@@ -87,10 +87,13 @@ namespace BookShop.Services
             CancellationToken token = default)
         {
             var image  = await SixLabors.ImageSharp.Image.LoadAsync(sourcePath, token);
+
             var ratioX = (double)size / image.Width; 
             var ratioY = (double)size / image.Height;
             var ratio  = Math.Min(ratioX, ratioY);
+
             using var stream = File.Create(destinationPath);
+
             if(ratio <= 1) 
             {
                var width  = (int)(image.Width * ratio);
