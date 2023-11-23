@@ -9,6 +9,7 @@
         public string BranchName { get; set; }
         public string BookName { get; set; }
         public int Number { get; set; }
+        public DateTime CreateDate { get; set; }
 
     }
 }

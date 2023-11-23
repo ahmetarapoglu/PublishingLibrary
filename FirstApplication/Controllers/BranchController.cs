@@ -1,16 +1,22 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
+using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
 using BookShop.Models.AuthorModels;
+using BookShop.Models.BookVersionModels;
 using BookShop.Models.BranchModels;
 using BookShop.Models.OrderModels;
 using BookShop.Models.RequestModels;
+using BookShop.Services;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using static NuGet.Packaging.PackagingConstants;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
 {
@@ -19,10 +25,11 @@ namespace BookShop.Controllers
     [Authorize]
     public class BranchController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public BranchController(AppDbContext context)
+        private readonly IRepository<Branch> _branchRepository;
+
+        public BranchController(IRepository<Branch> branchRepository)
         {
-            _context = context;
+            _branchRepository = branchRepository;
         }
 
 
@@ -33,38 +40,62 @@ namespace BookShop.Controllers
 
             try
             {
-                var x = 0m;
-                var y = 0m;
-                var branches = await _context.Branches
-                    .Include(i => i.Orders).ThenInclude(i=>i.BookVersion)
-                    .Include(i => i.BranchPayments)
-                    .Where(i => i.BranchName.Contains(model.Search))
-                    .OrderByDescending(i => i.Id)
-                    .ToListAsync();
+                //Where.
+                Expression<Func<Branch, bool>> filter = i => true;
 
-                var data = branches
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i => new BranchRModel
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
+
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Search.
+                if (!string.IsNullOrEmpty(model.Search))
+                    filter = filter.And(i => i.BranchName.Contains(model.Search));
+
+                //Sort.
+                Expression<Func<Branch, object>> Order = model.Order switch
+                {
+                    "id" => i => i.Id,
+                    "branchName" => i => i.BranchName,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<Branch> orderBy(IQueryable<Branch> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select
+                static IQueryable<BranchRModel> select(IQueryable<Branch> query) => query.Select(entity => new BranchRModel
+                {
+                    Id = entity.Id,
+                    BranchAddress = entity.BranchAddress,
+                    BranchName = entity.BranchName,
+                    PhoneNumber = entity.PhoneNumber,
+                    TotalAmount = entity.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
+                    TotalPayment = entity.BranchPayments.Sum(i => i.Amount),
+                    RemainingPayment = entity.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - entity.BranchPayments.Sum(i => i.Amount),
+                    Orders = entity.Orders.Select(i => new OrderRModel
                     {
                         Id = i.Id,
-                        BranchAddress = i.BranchAddress,
-                        BranchName = i.BranchName,
-                        PhoneNumber = i.PhoneNumber,
-                        TotalAmount = i.Orders.Sum(i=>((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
-                        TotalPayment = i.BranchPayments.Sum(i=>i.Amount),
-                        RemainingPayment = i.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - i.BranchPayments.Sum(i => i.Amount),
-                        Orders = i.Orders.Select(i=>new OrderRModel
-                        {
-                            Id = i.Id,
-                            BranchId = i.BranchId,
-                            BookCount = i.BookCount,
-                            BookVersionId = i.BookVersionId,
-                            Total = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount
-                        }).ToList(),
-                    });
+                        BranchId = i.BranchId,
+                        BookCount = i.BookCount,
+                        BookVersionId = i.BookVersionId,
+                        Total = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount
+                    }).ToList(),
+                });
 
-                return Ok(new { total = branches.Count, data });
+                var (total, data) = await _branchRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
+
+                return Ok(new { data, total });
+
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -78,19 +109,20 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Branches.Include(i => i.Orders).ThenInclude(i=>i.BookVersion).Include(i => i.BranchPayments).FirstOrDefaultAsync(i => i.Id == id) 
-                    ?? throw new Exception($"Branch With this id :{id} Not Found!.");
+                //Where
+                Expression<Func<Branch, bool>> filter = i => i.Id == id;
 
-                var branch = new BranchRModel
+                //Select
+                static IQueryable<BranchRModel> select(IQueryable<Branch> query) => query.Select(entity => new BranchRModel
                 {
-                    Id = data.Id,
-                    BranchAddress= data.BranchAddress,
-                    BranchName = data.BranchName,
-                    PhoneNumber = data.PhoneNumber,
-                    TotalAmount = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) ,
-                    TotalPayment = data.BranchPayments.Sum(i => i.Amount),
-                    RemainingPayment = data.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - data.BranchPayments.Sum(i => i.Amount),
-                    Orders = data.Orders.Select(i => new OrderRModel
+                    Id = entity.Id,
+                    BranchAddress = entity.BranchAddress,
+                    BranchName = entity.BranchName,
+                    PhoneNumber = entity.PhoneNumber,
+                    TotalAmount = entity.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
+                    TotalPayment = entity.BranchPayments.Sum(i => i.Amount),
+                    RemainingPayment = entity.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)) - entity.BranchPayments.Sum(i => i.Amount),
+                    Orders = entity.Orders.Select(i => new OrderRModel
                     {
                         Id = i.Id,
                         BranchId = i.BranchId,
@@ -98,8 +130,15 @@ namespace BookShop.Controllers
                         BookVersionId = i.BookVersionId,
                         Total = (i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount
                     }).ToList(),
-                };
+                });
+
+                var branch = await _branchRepository.FindAsync(select, filter);
+
                 return Ok(branch);
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -114,13 +153,22 @@ namespace BookShop.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
 
-                _context.Add(BranchCModel.Fill(model));
-                _context.SaveChanges();
-                return Ok(new { status = true });
+                var entity = new Branch
+                {
+                    BranchName = model.BranchName,
+                    BranchAddress = model.BranchAddress,
+                    PhoneNumber = model.PhoneNumber,
+                };
+
+                await _branchRepository.AddAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -128,7 +176,6 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPut]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UpdateBranch(BranchUModel model)
@@ -136,27 +183,25 @@ namespace BookShop.Controllers
             try
             {
                 if (model.Id == 0 || model.Id == null)
-                {
-                    throw new Exception("Reauested Branch Not Found!.");
-                }
-                var branch = await _context.Branches.FirstOrDefaultAsync(i => i.Id == model.Id);
-
-                if (branch == null)
-                {
-                    throw new Exception("Requested Branch Not Found!.");
-                }
+                    throw new Exception("Reauested Author Not Found!.");
 
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
 
-                 branch.BranchName = model.BranchName;
-                 branch.BranchAddress = model.BranchAddress;
-                 branch.PhoneNumber = model.PhoneNumber;
+                //Where
+                Expression<Func<Branch, bool>> filter = i => i.Id == model.Id;
 
-                _context.SaveChanges();
-                return Ok(new { status = true });
+                var entity = await _branchRepository.FindAsync(filter);
+
+                entity!.BranchName = model.BranchName;
+                entity.BranchAddress = model.BranchAddress;
+                entity.PhoneNumber = model.PhoneNumber;
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -170,10 +215,16 @@ namespace BookShop.Controllers
         {
             try
             {
-                var branch = await _context.Branches.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Branch whith this ID:{id} Nof Found!.");
-                _context.Branches.Remove(branch);
-                await _context.SaveChangesAsync();
-                return Ok("Branch Removed Successfuly!.");
+                //Where
+                Expression<Func<Branch, bool>> filter = i => i.Id == id;
+
+                await _branchRepository.DeleteAsync(filter);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {

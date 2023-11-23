@@ -1,13 +1,13 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
 using BookShop.Entities;
 using BookShop.Models.InvoiceModels;
 using BookShop.Models.OrderModels;
 using BookShop.Models.RequestModels;
+using BookShop.Services;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Linq.Expressions;
 
 namespace BookShop.Controllers
 {
@@ -16,10 +16,15 @@ namespace BookShop.Controllers
     [Authorize]
     public class InvoiceController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public InvoiceController(AppDbContext context)
+        private readonly IRepository<Invoice> _invoiceRepository;
+        private readonly IRepository<Order> _orderRepository;
+
+        public InvoiceController(
+            IRepository<Invoice> invoiceRepository,
+            IRepository<Order> orderRepository)
         {
-            _context = context;
+            _invoiceRepository = invoiceRepository;
+            _orderRepository = orderRepository;
         }
 
 
@@ -29,30 +34,54 @@ namespace BookShop.Controllers
         {
             try
             {
-                var invoices = await _context.Invoices
-                    .Include(i => i.Order)
-                    .ThenInclude(i => i.BookVersion)
-                    .OrderByDescending(i => i.Id)
-                    .ToListAsync();
-                var data = invoices
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i => new InvoiceRModel
-                    {
-                        Id = i.Id,
-                        Order = new OrderRModel
-                        {
-                            Id = i.Id,
-                            BranchId = i.Order.BranchId,
-                            BookVersionId = i.Order.BookVersionId,
-                            BookName = i.Order.BookVersion.Book.Title,
-                            BookCount = i.Order.BookCount,
-                            Total = i.Order.BookVersion.SellPrice * i.Order.BookCount,
-                            profitTotal = (i.Order.BookVersion.SellPrice - i.Order.BookVersion.CostPrice) * i.Order.BookCount,
-                        },
-                    });
 
-                return Ok(new { total= invoices.Count, data });
+                //Where.
+                Expression<Func<Invoice, bool>> filter = i => true;
+
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
+
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Sort.
+                Expression<Func<Invoice, object>> Order = model.Order switch
+                {
+                    "id" => i => i.Id,
+                    "createDate" => i => i.CreateDate,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<Invoice> orderBy(IQueryable<Invoice> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select
+                static IQueryable<InvoiceRModel> select(IQueryable<Invoice> query) => query.Select(entity => new InvoiceRModel
+                {
+                    Id = entity.Id,
+                    Order = new OrderRModel
+                    {
+                        Id = entity.Id,
+                        BranchId = entity.Order.BranchId,
+                        BookVersionId = entity.Order.BookVersionId,
+                        BookName = entity.Order.BookVersion.Book.Title,
+                        BookCount = entity.Order.BookCount,
+                        Total = entity.Order.BookVersion.SellPrice * entity.Order.BookCount,
+                        profitTotal = (entity.Order.BookVersion.SellPrice - entity.Order.BookVersion.CostPrice) * entity.Order.BookCount,
+                    },
+                });
+
+                var (total, data) = await _invoiceRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
+
+                return Ok(new { data, total });
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -66,25 +95,32 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Invoices.Include(i=>i.Order).ThenInclude(i=>i.BookVersion)
-                    .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Invoice With this id :{id} Not Found!.");
+                //Where
+                Expression<Func<Invoice, bool>> filter = i => i.Id == id;
 
-                var invoice = new InvoiceRModel
+                //Select
+                static IQueryable<InvoiceRModel> select(IQueryable<Invoice> query) => query.Select(entity => new InvoiceRModel
                 {
-                    Id = data.Id,
+                    Id = entity.Id,
                     Order = new OrderRModel
                     {
-                        Id = data.Id,
-                        BranchId = data.Order.BranchId,
-                        BookVersionId = data.Order.BookVersionId,
-                        BookName = data.Order.BookVersion.Book.Title,
-                        BookCount = data.Order.BookCount,
-                        Total = data.Order.BookVersion.SellPrice * data.Order.BookCount,
-                        profitTotal = (data.Order.BookVersion.SellPrice - data.Order.BookVersion.CostPrice) * data.Order.BookCount,
+                        Id = entity.Id,
+                        BranchId = entity.Order.BranchId,
+                        BookVersionId = entity.Order.BookVersionId,
+                        BookName = entity.Order.BookVersion.Book.Title,
+                        BookCount = entity.Order.BookCount,
+                        Total = entity.Order.BookVersion.SellPrice * entity.Order.BookCount,
+                        profitTotal = (entity.Order.BookVersion.SellPrice - entity.Order.BookVersion.CostPrice) * entity.Order.BookCount,
                     },
-                
-                };
+                });
+
+                var invoice = await _invoiceRepository.FindAsync(select, filter);
+
                 return Ok(invoice);
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -103,15 +139,31 @@ namespace BookShop.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var order = await _context.Orders.Include(i => i.Invoice).FirstOrDefaultAsync(i=>i.Id == model.OrderId);
-                if(!order.IsInvoiced) {
-                    order.BookVersionId = model.BookVersionId;
-                    order.BookCount = model.BookCount;
-                    order.IsInvoiced = true;
-                }
-                _context.Add(InvoiceCModel.Fill(model));
-                _context.SaveChanges();
-                return Ok(new {});
+                //Where
+                Expression<Func<Order, bool>> filter = i => i.Id == model.OrderId;
+
+                var order = await _orderRepository.FindAsync(filter);
+
+                if (order!.IsInvoiced)
+                    throw new OzelException(ErrorProvider.NotValid);
+
+                order.BookVersionId = model.BookVersionId;
+                order.BookCount = model.BookCount;
+                order.IsInvoiced = true;
+
+                var entity = new Invoice
+                {
+                    OrderId = model.OrderId,
+                };
+
+                await _orderRepository.UpdateAsync(order);
+                await _invoiceRepository.AddAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -119,29 +171,38 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UpdateInvoice(InvoiceUModel model)
         {
             try
             {
 
-                if (!ModelState.IsValid) return BadRequest(ModelState);
-       
-                if (model.Id < 0 || model.Id == null)  throw new Exception("Reauested Order Not Found!.");
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
 
-                var invoice = await _context.Invoices
-                    .FirstOrDefaultAsync(i => i.Id == model.Id) ?? throw new Exception("Requested Order Not Found!.");
+                if (model.Id < 0 || model.Id == null)
+                    throw new Exception("Reauested Order Not Found!.");
 
-                var order = await _context.Orders.Include(i => i.Invoice).FirstOrDefaultAsync(i => i.Id == model.OrderId);
-                if (!order.IsInvoiced)
+                //Where
+                Expression<Func<Order, bool>> filter = i => i.Id == model.OrderId;
+
+                var entity = await _orderRepository.FindAsync(filter);
+
+                if (entity!.IsInvoiced)
                 {
-                    order.BookVersionId = model.BookVersionId;
-                    order.BookCount = model.BookCount;
-                    order.IsInvoiced = true;
+                    entity.BookVersionId = model.BookVersionId;
+                    entity.BookCount = model.BookCount;
+                    entity.IsInvoiced = true;
                 }
-                _context.SaveChanges();
-                return Ok("Invoice Updated Succefuly!.");
+
+                await _orderRepository.UpdateAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -155,10 +216,16 @@ namespace BookShop.Controllers
         {
             try
             {
-                var invoice = await _context.Invoices.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Invoice whith this ID:{id} Nof Found!.");
-                _context.Invoices.Remove(invoice);
-                await _context.SaveChangesAsync();
-                return Ok("Invoice Removed Successfuly!.");
+                //Where
+                Expression<Func<Invoice, bool>> filter = i => i.Id == id;
+
+                await _invoiceRepository.DeleteAsync(filter);
+                return Ok();
+
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {

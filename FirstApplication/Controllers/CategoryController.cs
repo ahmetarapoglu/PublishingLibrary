@@ -153,7 +153,6 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPut]
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UpdateCategory(CategoryUModel model)

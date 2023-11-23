@@ -1,8 +1,9 @@
-﻿namespace BookShop.Entities
+﻿using BookShop.Services;
+
+namespace BookShop.Entities
 {
-    public class Book
+    public class Book : BaseEntity
     {
-        public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime PublishedDate { get; set; }

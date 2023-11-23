@@ -1,8 +1,9 @@
-﻿namespace BookShop.Entities
+﻿using BookShop.Services;
+
+namespace BookShop.Entities
 {
-    public class BookVersion
+    public class BookVersion : BaseEntity
     {
-        public int Id { get; set; }
         public int Number { get; set; }
         public int BookCount { get; set; }
         public decimal CostPrice { get; set; }

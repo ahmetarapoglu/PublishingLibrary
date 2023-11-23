@@ -1,12 +1,12 @@
 ﻿
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using BookShop.Services;
 
 namespace BookShop.Entities
 {
-    public class Order
+    public class Order : BaseEntity
     {
-        public int Id { get; set; }
         public int BranchId { get; set; }
         public int BookCount { get; set; }
         public bool IsInvoiced { get; set; }

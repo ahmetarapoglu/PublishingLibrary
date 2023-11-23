@@ -6,6 +6,7 @@ namespace BookShop.Models.InvoiceModels
     {
         public int Id { get; set; }
         public int OrderId { get; set; }
+        public DateTime CreateDate { get; set; }
         public OrderRModel Order { get; set; }
 
     }

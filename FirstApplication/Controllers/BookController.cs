@@ -1,4 +1,5 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
+using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.AuthorAddressModels;
 using BookShop.Models.AuthorBiyografi;
@@ -6,12 +7,16 @@ using BookShop.Models.AuthorModels;
 using BookShop.Models.BookModels;
 using BookShop.Models.BookVersionModels;
 using BookShop.Models.RequestModels;
+using BookShop.Services;
 using BookShop.Validations.ReqValidation;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Versioning;
+using System.Linq.Expressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
 {
@@ -20,70 +25,87 @@ namespace BookShop.Controllers
     [Authorize]
     public class BookController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public BookController(AppDbContext context)
+        private readonly IRepository<Book> _bookRepository;
+        public BookController(IRepository<Book> bookRepository)
         {
-            _context = context;
+            _bookRepository = bookRepository;
         }
+
 
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> GetBooks(BookRequest model)
         {
-            var dtrValidation = new DataTableReqValidation();
-            var validationResult = dtrValidation.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    throw new Exception($"Error: {error.ErrorMessage}");
-                }
-            }
+
 
             try
             {
-                var books = await _context.Books
-                    .Include(i => i.Category)
-                    .Include(i => i.BookAuthors)
-                    .Include(i => i.BookVersions)
-                    .Where(i => i.Title.Contains(model.Search))
-                    .OrderByDescending(i => i.Id)
-                    .ToListAsync();
+                //Where.
+                Expression<Func<Book, bool>> filter = i => true;
 
-                var data = books
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i => new BookRModel
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
+
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Search.
+                if (!string.IsNullOrEmpty(model.Search))
+                    filter = filter.And(i => i.Title.Contains(model.Search));
+
+                //Sort.
+                Expression<Func<Book, object>> Order = model.Order switch
+                {
+                    "id" => i => i.Id,
+                    "title" => i => i.Title,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<Book> orderBy(IQueryable<Book> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select
+                static IQueryable<BookRModel> select(IQueryable<Book> query) => query.Select(entity => new BookRModel
+                {
+                    Id = entity.Id,
+                    Title = entity.Title,
+                    Description = entity.Description,
+                    PublishedDate = entity.PublishedDate,
+                    Cover = entity.Cover,
+                    CategoryName = entity.Category.CategoryName,
+                    categoryId = entity.CategoryId,
+                    BookAuthors = entity.BookAuthors.Select(i => new AuthorInBookModel
+                    {
+                        AuthorId = i.AuthorId,
+                        AuhorRatio = i.AuhorRatio,
+                    }).ToList(),
+
+                    BookVersions = entity.BookVersions.Select(i =>
+                    new BookVersionRModel
                     {
                         Id = i.Id,
-                        Title = i.Title,
-                        Description = i.Description,
-                        PublishedDate = i.PublishedDate,
-                        Cover = i.Cover,
-                        CategoryName = i.Category.CategoryName,
-                        categoryId = i.CategoryId,
-                        BookAuthors = i.BookAuthors.Select(i=>new AuthorInBookModel
-                        {
-                            AuthorId = i.AuthorId,
-                            AuhorRatio = i.AuhorRatio,
-                        }).ToList(),
+                        BookCount = i.BookCount,
+                        Number = i.Number,
+                        CostPrice = i.CostPrice,
+                        TotalCostPrice = i.CostPrice * i.BookCount,
+                        SellPrice = i.SellPrice,
+                        TotalSellPrice = i.SellPrice * i.BookCount,
+                        LibraryRatio = i.LibraryRatio,
+                    }).ToList(),
 
-                        BookVersions = i.BookVersions.Select(i =>
-                        new BookVersionRModel
-                        {
-                            Id = i.Id,
-                            BookCount = i.BookCount,
-                            Number = i.Number,
-                            CostPrice = i.CostPrice,
-                            TotalCostPrice = i.CostPrice * i.BookCount,
-                            SellPrice = i.SellPrice,
-                            TotalSellPrice = i.SellPrice * i.BookCount,
-                            LibraryRatio = i.LibraryRatio
-                        }).ToList(),
+                });
 
-                    });
+                var (total, data) = await _bookRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
 
-                return Ok(new { total = books.Count, data });
+                return Ok(new { data, total });
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -97,28 +119,26 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Books
-                    .Include(i=>i.Category)
-                    .Include(i => i.BookAuthors)
-                    .Include(i => i.BookVersions)
-                    .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Book With this id :{id} Not Found!.");
+                //Where
+                Expression<Func<Book, bool>> filter = i => i.Id == id;
 
-                var book = new BookRModel
+                //Select
+                static IQueryable<BookRModel> select(IQueryable<Book> query) => query.Select(entity => new BookRModel
                 {
-                    Id = data.Id,
-                    Title = data.Title,
-                    Description = data.Description,
-                    PublishedDate = data.PublishedDate,
-                    Cover = data.Cover,
-                    CategoryName = data.Category.CategoryName,
-                    categoryId = data.CategoryId,
-                    BookAuthors = data.BookAuthors.Select(i => new AuthorInBookModel
+                    Id = entity.Id,
+                    Title = entity.Title,
+                    Description = entity.Description,
+                    PublishedDate = entity.PublishedDate,
+                    Cover = entity.Cover,
+                    CategoryName = entity.Category.CategoryName,
+                    categoryId = entity.CategoryId,
+                    BookAuthors = entity.BookAuthors.Select(i => new AuthorInBookModel
                     {
                         AuthorId = i.AuthorId,
                         AuhorRatio = i.AuhorRatio,
                     }).ToList(),
 
-                    BookVersions = data.BookVersions.Select(i =>
+                    BookVersions = entity.BookVersions.Select(i =>
                     new BookVersionRModel
                     {
                         Id = i.Id,
@@ -130,12 +150,20 @@ namespace BookShop.Controllers
                         TotalSellPrice = i.SellPrice * i.BookCount,
                         LibraryRatio = i.LibraryRatio,
                     }).ToList(),
-                };
+
+                });
+
+                var book = await _bookRepository.FindAsync(select, filter);
+
                 return Ok(book);
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.InnerException.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -146,21 +174,37 @@ namespace BookShop.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
-                _context.Add(BookCModel.Fill(model));
-                _context.SaveChanges();
-                return Ok(new { status = true });
+
+                var entity = new Book
+                {
+                    Title = model.Title,
+                    Description = model.Description,
+                    PublishedDate = model.PublishedDate,
+                    Cover = model.Cover,
+                    CategoryId = model.CategoryId,
+                    BookAuthors = model.BookAuthors.Select(i => new BookAuthor
+                    {
+                        AuthorId = i.AuthorId,
+                        AuhorRatio = i.AuhorRatio,
+                    }).ToList()
+                };
+
+                await _bookRepository.AddAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.InnerException.Message);
+                return BadRequest(ex.Message);
             }
         }
        
         [HttpPost]
-        [HttpPut]
         [Route("[action]")]
         public async Task<IActionResult> UpdateBook(BookUModel model)
         {
@@ -168,37 +212,32 @@ namespace BookShop.Controllers
             try
             {
                 if (model.Id < 0 || model.Id == null)
-                {
                     throw new Exception("Reauested Book Not Found!.");
-                }
+              
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
-                var book = await _context.Books
-                    .Include(i => i.Category)
-                    .Include(i => i.BookAuthors)
-                    .Include(i => i.BookVersions)
-                    .FirstOrDefaultAsync(i => i.Id == model.Id);
 
-                if (book == null)
-                {
-                    throw new Exception("Requested Book Not Found!.");
-                }
+                //Where
+                Expression<Func<Book, bool>> filter = i => i.Id == model.Id;
 
-                book.Title = model.Title;
-                book.Description = model.Description;
-                book.PublishedDate = model.PublishedDate;
-                book.Cover = model.Cover;
-                book.CategoryId = model.CategoryId;
-                book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
+                var entity = await _bookRepository.FindAsync(filter);
+
+                entity!.Title = model.Title;
+                entity.Description = model.Description;
+                entity.PublishedDate = model.PublishedDate;
+                entity.Cover = model.Cover;
+                entity.CategoryId = model.CategoryId;
+                entity.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                 {
                     AuthorId = i.AuthorId,
                     AuhorRatio = i.AuhorRatio,
                 }).ToList();
 
-                _context.SaveChanges();
-                return Ok(new { status = true });
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -212,10 +251,16 @@ namespace BookShop.Controllers
         {
             try
             {
-                var book = await _context.Books.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Book whith this ID:{id} Nof Found!.");
-                _context.Books.Remove(book);
-                await _context.SaveChangesAsync();
-                return Ok("Book Removed Successfuly!.");
+                //Where
+                Expression<Func<Book, bool>> filter = i => i.Id == id;
+
+                await _bookRepository.DeleteAsync(filter);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {

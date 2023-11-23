@@ -9,6 +9,7 @@ namespace BookShop.Models.AuthorModels
         public decimal TotalAmount { get; set; }
         public decimal TotalPayment { get; set; }
         public decimal RemainingPayment { get; set; }
+        public DateTime CreateDate { get; set; }
 
         public List<BookInAuthors> Books { get; set; }
     }

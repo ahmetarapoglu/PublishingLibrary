@@ -1,8 +1,9 @@
-﻿namespace BookShop.Entities
+﻿using BookShop.Services;
+
+namespace BookShop.Entities
 {
-    public class Branch
+    public class Branch : BaseEntity
     {
-        public int Id { get; set; }
         public string BranchName { get; set; }
         public string BranchAddress { get; set; }
         public string PhoneNumber { get; set; }

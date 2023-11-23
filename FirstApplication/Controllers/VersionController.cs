@@ -1,13 +1,17 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
+using BookShop.Db;
 using BookShop.Entities;
-using BookShop.Models.BookModels;
+using BookShop.Models.AuthorAddressModels;
+using BookShop.Models.AuthorBiyografi;
+using BookShop.Models.AuthorModels;
 using BookShop.Models.BookVersionModels;
 using BookShop.Models.RequestModels;
+using BookShop.Services;
 using BookShop.Validations.ReqValidation;
-using Microsoft.AspNetCore.Http;
+using LinqKit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
+using System.Linq.Expressions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
@@ -16,10 +20,16 @@ namespace BookShop.Controllers
     [ApiController]
     public class VersionController : ControllerBase
     {
+        private readonly IRepository<BookVersion> _versionRepository;
         private readonly AppDbContext _context;
-        public VersionController(AppDbContext context)
+
+        public VersionController(
+            IRepository<BookVersion> versionRepository,
+            AppDbContext context)
         {
+            _versionRepository = versionRepository;
             _context = context;
+
         }
 
         [HttpPost]
@@ -27,40 +37,58 @@ namespace BookShop.Controllers
         public async Task<IActionResult> GetVersions(VersionRequest model)
         {
 
-            var dtrValidation = new DataTableReqValidation();
-            var validationResult = dtrValidation.Validate(model);
-            if (!validationResult.IsValid)
-            {
-                foreach (var error in validationResult.Errors)
-                {
-                    throw new Exception($"Error: {error.ErrorMessage}");
-                }
-            }
-
             try
             {
-                var versions = await _context.VersionBooks
-                    .Where(i=>i.BookId==model.BookId)
-                    .OrderByDescending(i => i.Id)
-                    .ToListAsync();
+                //Where.
+                Expression<Func<BookVersion, bool>> filter = i => true;
 
-                var data = versions
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i => new BookVersionRModel
-                        {
-                           Id = i.Id,
-                           Number = i.Number,
-                           BookCount = i.BookCount,
-                           CostPrice = i.CostPrice,
-                           TotalCostPrice = i.CostPrice * i.BookCount,
-                           SellPrice = i.SellPrice,
-                           TotalSellPrice = i.SellPrice * i.BookCount,
-                           LibraryRatio = i.LibraryRatio,
-                        }
-                    );
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
 
-                return Ok(new { total = versions.Count, data });
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Search.
+                //if (!string.IsNullOrEmpty(model.Search))
+                //    filter = filter.And(i => i.Number.Contains(model.Search));
+
+                //Sort.
+                Expression<Func<BookVersion, object>> Order = model.Order switch
+                {
+                    "id" => i => i.Id,
+                    "number" => i => i.Number,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<BookVersion> orderBy(IQueryable<BookVersion> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select
+                static IQueryable<BookVersionRModel> select(IQueryable<BookVersion> query) => query
+                    .Select(entity => new BookVersionRModel
+                    {
+                        Id = entity.Id,
+                        BookCount = entity.BookCount,
+                        Number = entity.Number,
+                        CostPrice = entity.CostPrice,
+                        TotalCostPrice = entity.CostPrice * entity.BookCount,
+                        SellPrice = entity.SellPrice,
+                        TotalSellPrice = entity.SellPrice * entity.BookCount,
+                        LibraryRatio = entity.LibraryRatio,
+
+                    });
+
+                var (total, data) = await _versionRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
+
+                return Ok(new { data, total });
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -74,26 +102,35 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.VersionBooks
-                    .FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"Version With this id :{id} Not Found!.");
+                //Where
+                Expression<Func<BookVersion, bool>> filter = i => i.Id == id;
 
-                var book = new BookVersionRModel
+                //Select
+                static IQueryable<BookVersionRModel> select(IQueryable<BookVersion> query) => query
+                    .Select(entity => new BookVersionRModel
                 {
-                    Id = data.Id,
-                    BookCount = data.BookCount,
-                    Number = data.Number,
-                    CostPrice = data.CostPrice,
-                    TotalCostPrice = data.CostPrice * data.BookCount,
-                    SellPrice = data.SellPrice,
-                    TotalSellPrice = data.SellPrice * data.BookCount,
-                    LibraryRatio = data.LibraryRatio,
-                };
-              
-                return Ok(book);
+                    Id = entity.Id,
+                    BookCount = entity.BookCount,
+                    Number = entity.Number,
+                    CostPrice = entity.CostPrice,
+                    TotalCostPrice = entity.CostPrice * entity.BookCount,
+                    SellPrice = entity.SellPrice,
+                    TotalSellPrice = entity.SellPrice * entity.BookCount,
+                    LibraryRatio = entity.LibraryRatio,
+
+                });
+
+                var version = await _versionRepository.FindAsync(select, filter);
+
+                return Ok(version);
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.InnerException.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -104,30 +141,36 @@ namespace BookShop.Controllers
             try
             {
                 if (model.BookId == 0 || model.BookId == null)
-                {
                     throw new Exception("Reauested Book Not Found!.");
-                }
+                
 
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
+
 
                 var book = await _context.Books
                     .Include(i => i.BookVersions)
                     .FirstOrDefaultAsync(i => i.Id == model.BookId);
 
-                if (book == null)
+                var number = book!.BookVersions.OrderByDescending(i => i.Id).Select(i => i.Number).FirstOrDefault();
+
+                var entity = new BookVersion
                 {
-                    throw new Exception("Requested Book Not Found!.");
-                }
+                    BookId = model.BookId,
+                    Number = number + 1,
+                    BookCount = model.BookCount,
+                    CostPrice = model.CostPrice,
+                    SellPrice = model.SellPrice,
+                    LibraryRatio = model.LibraryRatio
+                };
 
-                var number = book.BookVersions.OrderByDescending(i => i.Id).Select(i => i.Number).FirstOrDefault();
+                await _versionRepository.AddAsync(entity);
 
-
-                _context.Add(BookVersionCModel.Fill(model, number));
-                _context.SaveChanges();
-                return Ok(new { status = true });
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -136,7 +179,6 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [HttpPut]
         [Route("[action]")]
         public async Task<IActionResult> UpdateVersion(BookVersionUModel model)
         {
@@ -144,28 +186,26 @@ namespace BookShop.Controllers
             try
             {
                 if (model.Id < 0 || model.Id == null)
-                {
                     throw new Exception("Reauested Version Not Found!.");
-                }
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                var version = await _context.VersionBooks
-                    .FirstOrDefaultAsync(i => i.Id == model.Id);
-
-                if (version == null)
-                {
-                    throw new Exception("Requested Version Not Found!.");
-                }
-
-                version.BookCount = model.BookCount;
-                version.CostPrice = model.CostPrice;
-                version.SellPrice = model.SellPrice;
-                version.LibraryRatio = model.LibraryRatio;
                
-                _context.SaveChanges();
-                return Ok(new { status = true });
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                //Where
+                Expression<Func<BookVersion, bool>> filter = i => i.Id == model.Id;
+
+                var entity = await _versionRepository.FindAsync(filter);
+
+                entity!.BookCount = model.BookCount;
+                entity.CostPrice = model.CostPrice;
+                entity.SellPrice = model.SellPrice;
+                entity.LibraryRatio = model.LibraryRatio;
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -179,13 +219,16 @@ namespace BookShop.Controllers
         {
             try
             {
-                var version = await _context.VersionBooks
-                    .FirstOrDefaultAsync(i => i.Id == id)
-                    ?? throw new Exception($"Version whith this ID:{id} Nof Found!.");
+                //Where
+                Expression<Func<BookVersion, bool>> filter = i => i.Id == id;
 
-                _context.VersionBooks.Remove(version);
-                await _context.SaveChangesAsync();
-                return Ok("Version Removed Successfuly!.");
+                await _versionRepository.DeleteAsync(filter);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {

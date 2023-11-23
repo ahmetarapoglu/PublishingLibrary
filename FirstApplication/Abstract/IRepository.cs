@@ -33,7 +33,6 @@ namespace BookShop.Abstract
             int? skip = null, int? take = null);
 
 
-
         Task<TEntity?> FindAsync(
             Expression<Func<TEntity, bool>> filter,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null);

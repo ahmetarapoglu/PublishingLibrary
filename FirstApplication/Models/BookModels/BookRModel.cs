@@ -7,6 +7,8 @@ namespace BookShop.Models.BookModels
         public int Id { get; set; }
         public string CategoryName { get; set; }
         public int categoryId { get; set; }
+        public DateTime CreateDate { get; set; }
+
         public List<BookVersionRModel> BookVersions { get; set; }
     }
 

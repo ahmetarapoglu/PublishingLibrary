@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BookShop.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BookShop.Entities
 {
-    public class Invoice
+    public class Invoice : BaseEntity
     {
-        public int Id { get; set; }
         public int OrderId { get; set; }
         public Order Order { get; set; }
 

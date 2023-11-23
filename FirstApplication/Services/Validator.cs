@@ -18,7 +18,6 @@ namespace BookShop.Services
 
         public void Validator(T model)
         {
-
             var validation = _requestValidator.Validate(model);
 
             if (!validation.IsValid)

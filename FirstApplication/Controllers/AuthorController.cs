@@ -24,11 +24,10 @@ namespace BookShop.Controllers
     [Authorize]
     public class AuthorController : ControllerBase
     {
-        private readonly IRepository<Author> _authorepository;
-
-        public AuthorController( IRepository<Author> authorepository)
+        private readonly IRepository<Author> _authorRepository;
+        public AuthorController( IRepository<Author> authorRepository)
         {
-            _authorepository = authorepository;
+            _authorRepository = authorRepository;
         }
 
 
@@ -52,9 +51,6 @@ namespace BookShop.Controllers
                 //Search.
                 if (!string.IsNullOrEmpty(model.Search))
                     filter = filter.And(i => i.NameSurname.Contains(model.Search));
-
-                //Include.
-                //static IIncludableQueryable<Author, object> include(IQueryable<Author> query) => query.Include(i => i.Books);
 
                 //Sort.
                 Expression<Func<Author, object>> Order = model.Order switch
@@ -115,7 +111,7 @@ namespace BookShop.Controllers
                         }).ToList(),
                     });
 
-                var (total, data) = await _authorepository.GetListAndTotalAsync(select, filter,null, orderBy, skip: model.Skip, take: model.Take);
+                var (total, data) = await _authorRepository.GetListAndTotalAsync(select, filter,null, orderBy, skip: model.Skip, take: model.Take);
 
                 return Ok(new { data, total });
 
@@ -184,7 +180,7 @@ namespace BookShop.Controllers
 
                 });
 
-                var author = await _authorepository.FindAsync(select, filter);
+                var author = await _authorRepository.FindAsync(select, filter);
 
                 return Ok(author);
             }
@@ -205,9 +201,8 @@ namespace BookShop.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
+                
 
                 var entity = new Author
                 {
@@ -228,7 +223,7 @@ namespace BookShop.Controllers
                     }
                 };
 
-                await _authorepository.AddAsync(entity);
+                await _authorRepository.AddAsync(entity);
 
                 return Ok();
             }
@@ -243,7 +238,6 @@ namespace BookShop.Controllers
         }
 
         [HttpPost]
-        [HttpPut]
         [Route("[action]")]
         public async Task<IActionResult> UpdateAuthor(AuthorUModel model)
         {
@@ -260,7 +254,7 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<Author, bool>> filter = i => i.Id == model.Id;
 
-                var entity = await _authorepository.FindAsync(filter);
+                var entity = await _authorRepository.FindAsync(filter);
 
 
                 entity!.NameSurname = model.NameSurname;
@@ -280,7 +274,7 @@ namespace BookShop.Controllers
                     Education = model.AuthorBiography.Education
                 };
 
-                await _authorepository.UpdateAsync(entity);
+                await _authorRepository.UpdateAsync(entity);
 
                 return Ok();
             }
@@ -303,7 +297,7 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<Author, bool>> filter = i => i.Id == id;
 
-                await _authorepository.DeleteAsync(filter);
+                await _authorRepository.DeleteAsync(filter);
                 return Ok();
             }
             catch (OzelException ex)

@@ -62,7 +62,8 @@ namespace BookShop.Controllers
 
         }
 
-        [HttpPost("GetUsers")]
+        [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> GetUsers(UserRequest model)
         {
             try
@@ -88,7 +89,8 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpGet("GetUser")]
+        [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> GetUser(int id)
         {
             try
@@ -108,13 +110,16 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("GetUserProfile")]
+
+        [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> GetUserProfile()
         {
             try
             {
                 _ = int.TryParse(_userManager.GetUserId(User), out int userId);
-                var data = await _context.Users.FirstOrDefaultAsync(i => i.Id == userId) ?? throw new Exception($"User whith this ID:{userId} Nof Found!.");
+                var data = await _context.Users.FirstOrDefaultAsync(i => i.Id == userId)
+                    ?? throw new Exception($"User whith this ID:{userId} Nof Found!.");
                 var user = new UserModel
                 {
                     Id = data.Id,
@@ -128,8 +133,9 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("UpdateUser")]
-        [HttpPut("UpdateUser")]
+
+        [HttpPost]
+        [Route("[action]")]
         public async Task<IActionResult> UpdateUser(UserModel request)
         {
             try
@@ -148,7 +154,8 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpDelete("DeleteUser")]
+        [HttpDelete]
+        [Route("[action]")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try
