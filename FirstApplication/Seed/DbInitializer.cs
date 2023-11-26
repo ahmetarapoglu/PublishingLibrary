@@ -15,8 +15,8 @@ namespace BookShop.Seed
 				using var serviceScope = app.ApplicationServices.CreateScope();
 				var context = serviceScope.ServiceProvider.GetService<AppDbContext>();
 
-				var _userManger = serviceScope.ServiceProvider.GetRequiredService<UserManager<User>>();
-				var _roleManger = serviceScope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+				var _userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<User>>();
+				var _roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
 
 				if (context == null) return;
 
@@ -25,7 +25,7 @@ namespace BookShop.Seed
 				//Create Role Function.
 				async Task<Role> CreateRoleAsync(string roleName,bool isSystemRole = false)
 				{
-					var role = await _roleManger.Roles.FirstOrDefaultAsync(i => i.Name == roleName);
+					var role = await _roleManager.Roles.FirstOrDefaultAsync(i => i.Name == roleName);
 			
 					if(role is null)
 					{
@@ -34,7 +34,7 @@ namespace BookShop.Seed
 							Name = roleName,
 						};
 
-                        await _roleManger.CreateAsync(role);
+                        await _roleManager.CreateAsync(role);
 					}
                     return role;
 				}
@@ -54,9 +54,10 @@ namespace BookShop.Seed
 								{
 									RoleId = i
 								}
-							).ToList()
+							).ToList()!
                         };
-						await _userManger!.CreateAsync(user , password);
+
+						await _userManager!.CreateAsync(user , password);
 					}
 				}
 

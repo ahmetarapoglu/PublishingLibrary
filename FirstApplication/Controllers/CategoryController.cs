@@ -141,7 +141,7 @@ namespace BookShop.Controllers
 
                 await _categoryrepository.AddAsync(entity);
 
-                return Ok(new { status = true });
+                return Ok();
             }
             catch (OzelException ex)
             {
@@ -160,14 +160,12 @@ namespace BookShop.Controllers
             try
             {
                 if (model.Id == 0 || model.Id == null)
-                {
                     throw new Exception("Reauested Category Not Found!.");
-                }
+                
 
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
+               
                 //Where
                 Expression<Func<Category, bool>> filter = i => i.Id == model.Id;
 
@@ -199,6 +197,7 @@ namespace BookShop.Controllers
                 Expression<Func<Category, bool>> filter = i => i.Id == id;
 
                 await _categoryrepository.DeleteAsync(filter);
+
                 return Ok();
             }
             catch (OzelException ex)

@@ -1,4 +1,6 @@
-﻿using BookShop.Db;
+﻿using BookShop.Abstract;
+using BookShop.Db;
+using BookShop.Entities;
 using BookShop.Models.AuthorModels;
 using BookShop.Models.AuthorPaymentModels;
 using BookShop.Models.BranchPaymentModels;
@@ -15,9 +17,13 @@ namespace BookShop.Controllers
     public class PaymentsController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public PaymentsController(AppDbContext context)
+        private readonly IRepository<AuthorPayment> _paymentRepository;
+
+        public PaymentsController(AppDbContext context, IRepository<AuthorPayment> paymentRepository)
         {
             _context = context;
+            _paymentRepository = paymentRepository;
+
         }
 
         [HttpPost]

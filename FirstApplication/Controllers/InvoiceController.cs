@@ -7,6 +7,8 @@ using BookShop.Services;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace BookShop.Controllers
@@ -69,9 +71,12 @@ namespace BookShop.Controllers
                         BranchId = entity.Order.BranchId,
                         BookVersionId = entity.Order.BookVersionId,
                         BookName = entity.Order.BookVersion.Book.Title,
+                        BranchName = entity.Order.Branch.BranchName,
                         BookCount = entity.Order.BookCount,
+                        Number = entity.Order.BookVersion.Number,
                         Total = entity.Order.BookVersion.SellPrice * entity.Order.BookCount,
                         profitTotal = (entity.Order.BookVersion.SellPrice - entity.Order.BookVersion.CostPrice) * entity.Order.BookCount,
+                        IsInvoiced = entity.Order.IsInvoiced,
                     },
                 });
 
@@ -108,9 +113,12 @@ namespace BookShop.Controllers
                         BranchId = entity.Order.BranchId,
                         BookVersionId = entity.Order.BookVersionId,
                         BookName = entity.Order.BookVersion.Book.Title,
+                        BranchName = entity.Order.Branch.BranchName,
                         BookCount = entity.Order.BookCount,
+                        Number = entity.Order.BookVersion.Number,
                         Total = entity.Order.BookVersion.SellPrice * entity.Order.BookCount,
                         profitTotal = (entity.Order.BookVersion.SellPrice - entity.Order.BookVersion.CostPrice) * entity.Order.BookCount,
+                        IsInvoiced = entity.Order.IsInvoiced,
                     },
                 });
 
@@ -135,9 +143,8 @@ namespace BookShop.Controllers
             try
             {
                 if (!ModelState.IsValid)
-                {
                     return BadRequest(ModelState);
-                }
+                
 
                 //Where
                 Expression<Func<Order, bool>> filter = i => i.Id == model.OrderId;
@@ -185,18 +192,21 @@ namespace BookShop.Controllers
                     throw new Exception("Reauested Order Not Found!.");
 
                 //Where
-                Expression<Func<Order, bool>> filter = i => i.Id == model.OrderId;
+                Expression<Func<Invoice, bool>> filter = i => i.Id == model.Id;
 
-                var entity = await _orderRepository.FindAsync(filter);
+                //Include.
+                static IIncludableQueryable<Invoice, object> include(IQueryable<Invoice> query) => query.Include(i => i.Order);
 
-                if (entity!.IsInvoiced)
+                var entity = await _invoiceRepository.FindAsync(filter, include);
+
+                if (entity!.Order.IsInvoiced)
                 {
-                    entity.BookVersionId = model.BookVersionId;
-                    entity.BookCount = model.BookCount;
-                    entity.IsInvoiced = true;
+                    entity.Order.BookVersionId = model.BookVersionId;
+                    entity.Order.BookCount = model.BookCount;
+                    entity.Order.IsInvoiced = true;
                 }
 
-                await _orderRepository.UpdateAsync(entity);
+                await _invoiceRepository.UpdateAsync(entity);
 
                 return Ok();
             }

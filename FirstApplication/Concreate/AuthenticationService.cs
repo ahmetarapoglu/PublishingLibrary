@@ -1,6 +1,6 @@
 ﻿using BookShop.Abstract;
 using BookShop.Entities;
-using BookShop.Models.UserModels;
+using BookShop.Models.AccountModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

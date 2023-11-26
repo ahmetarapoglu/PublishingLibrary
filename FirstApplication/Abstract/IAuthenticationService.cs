@@ -1,4 +1,4 @@
-﻿using BookShop.Models.UserModels;
+﻿using BookShop.Models.AccountModels;
 
 namespace BookShop.Abstract
 {

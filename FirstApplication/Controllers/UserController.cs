@@ -1,12 +1,17 @@
 ﻿using BookShop.Abstract;
 using BookShop.Db;
 using BookShop.Entities;
+using BookShop.Models.CategoryModels;
 using BookShop.Models.RequestModels;
 using BookShop.Models.UserModels;
+using BookShop.Services;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BookShop.Controllers
 {
@@ -15,76 +20,76 @@ namespace BookShop.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IAuthenticationService _authenticationService;
-        private readonly AppDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IRepository<User> _userRepository;
 
 
-        public UserController(AppDbContext context, UserManager<User> userManager, IAuthenticationService authenticationService)
+        public UserController(
+            UserManager<User> userManager,
+            IRepository<User> userRepository)
         {
-            _authenticationService = authenticationService;
-            _context = context;
             _userManager = userManager;
+            _userRepository = userRepository;
         }
 
-        [AllowAnonymous]
-        [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            var response = await _authenticationService.Login(request);
-            var data = await _userManager.FindByNameAsync(request.UserName);
-
-            if (data is null)
-            {
-                data = await _userManager.FindByEmailAsync(request.UserName);
-            }
-
-             var user = new UserModel { 
-                 Id = data.Id,
-                 UserName = data.UserName,
-                 Email = data.Email
-             };
-            return Ok(new { token = response , user });
-        }
-
-        [HttpPost("AddUser")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddUser([FromBody] RegisterRequest request)
-        {
-            var response = await _authenticationService.Register(request);
-
-            return Ok(new { status = true });
-
-        }
-
-        [HttpGet]
+        [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> GetUsers(UserRequest model)
         {
             try
             {
-                var users = await _context.Users.ToListAsync();
-                var data =users
-                    .Where(i => i.UserName.Contains(model.Search))
-                    .OrderByDescending(i => i.Id)
-                    .Skip(model.Skip)
-                    .Take(model.Take)
-                    .Select(i => new UserModel
-                    {
-                        Id = i.Id,
-                        UserName = i.UserName,
-                        Email = i.Email
-                    });
-                return Ok(new { total= users.Count, data });
+
+                //Where.
+                Expression<Func<User, bool>> filter = i => true;
+
+                //Date(Filter).
+                if (model.StartDate != null)
+                    filter = filter.And(i => i.CreateDate.Date >= model.StartDate.Value.Date);
+
+                if (model.EndDate != null)
+                    filter = filter.And(i => i.CreateDate.Date <= model.EndDate.Value.Date);
+
+                //Search.
+                if (!string.IsNullOrEmpty(model.Search))
+                    filter = filter.And(i => i.UserName.Contains(model.Search));
+
+                //Sort.
+                Expression<Func<User, object>> Order = model.Order switch
+                {
+                    "id" => i => i.Id,
+                    "userName" => i => i.UserName,
+                    _ => i => i.Id,
+                };
+
+                //OrderBy.
+                IOrderedQueryable<User> orderBy(IQueryable<User> i)
+                   => model.SortDir == "ascend"
+                   ? i.OrderBy(Order)
+                   : i.OrderByDescending(Order);
+
+                //Select
+                static IQueryable<UserRModel> select(IQueryable<User> query) => query.Select(entity => new UserRModel
+                {
+                    Id = entity.Id,
+                    Email = entity.Email,
+                    UserName = entity.UserName,
+                    RoleName = entity.UserRoles.Select(i=>i.Role.Name).ToList(),
+                    IsActive = entity.IsActive,
+                    Image = entity.Image,
+                    CreateDate = entity.CreateDate,
+                });
+
+                var (total, data) = await _userRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
+
+                return Ok(new { data, total });
+
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-
                 return BadRequest(ex.Message);
             }
         }
@@ -95,38 +100,68 @@ namespace BookShop.Controllers
         {
             try
             {
-                var data = await _context.Users.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"User whith this ID:{id} Nof Found!.");
-                var user = new UserModel
+                //Where
+                Expression<Func<User, bool>> filter = i => i.Id == id;
+
+                //Select
+                static IQueryable<UserRModel> select(IQueryable<User> query) => query.Select(entity => new UserRModel
                 {
-                    Id = data.Id,
-                    Email = data.Email,
-                    UserName = data.UserName
-                };
-                return Ok(user);
+                    Id = entity.Id,
+                    Email = entity.Email,
+                    UserName = entity.UserName,
+                    RoleName = entity.UserRoles.Select(i => i.Role.Name).ToList(),
+                    IsActive = entity.IsActive,
+                    Image = entity.Image,
+                    CreateDate= entity.CreateDate,
+                });
+
+                var category = await _userRepository.FindAsync(select, filter);
+
+                return Ok(category);
+            }
+
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-
                 return BadRequest(ex.Message);
             }
         }
 
-        [HttpGet]
-        [Route("[action]")]
-        public async Task<IActionResult> GetUserProfile()
+        [HttpPost("AddUser")]
+        public async Task<IActionResult> AddUser(UserCModel model)
         {
             try
             {
-                _ = int.TryParse(_userManager.GetUserId(User), out int userId);
-                var data = await _context.Users.FirstOrDefaultAsync(i => i.Id == userId)
-                    ?? throw new Exception($"User whith this ID:{userId} Nof Found!.");
-                var user = new UserModel
+                // Search by username
+                var userByUsername = await _userManager.FindByNameAsync(model.UserName);
+                                        
+                // If not found by username, search by email
+                var userByEmail = await _userManager.FindByEmailAsync(model.Email);
+
+                if (userByUsername != null || userByEmail != null)
+                    throw new OzelException(ErrorProvider.NotValid);
+
+                var user = new User()
                 {
-                    Id = data.Id,
-                    Email = data.Email,
-                    UserName = data.UserName
+                    UserName = model.UserName,
+                    Email = model.Email,
+                    IsActive = model.IsActive,
+                    Image = model.Image,
+                    CreateDate = DateTime.Now,
+                    EmailConfirmed = true,
                 };
-                return Ok(user);
+
+                await _userManager!.CreateAsync(user, model.Password);
+
+                return Ok();
+            }
+
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -136,17 +171,72 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> UpdateUser(UserModel request)
+        public async Task<IActionResult> UpdateUser(UserUModel model)
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(i => i.Id == request.Id) ?? throw new Exception($"User whith this ID:{request.Id} Nof Found!.");
-                user.UserName = request.UserName;
-                user.Email = request.Email;
+                if (model.Id == 0 || model.Id == null)
+                    throw new Exception("Reauested User Not Found!.");
 
-                await _context.SaveChangesAsync();
-                return Ok(new { status = true });
 
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                //Where
+                Expression<Func<User, bool>> filter = i => i.Id == model.Id;
+
+                var entity = await _userRepository.FindAsync(filter);
+
+                entity!.UserName = model.UserName;
+                entity.Email = model.Email;
+                entity.IsActive = model.IsActive;
+                entity.Image = model.Image;
+                entity.UserRoles = model.UserRoles.Select(i => new UserRole
+                {
+                    RoleId = i
+                }).ToList();    
+
+                await _userRepository.UpdateAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ChangeUserState(int userId , bool isActive)
+        {
+            try
+            {
+                if (userId == 0 || userId == null)
+                    throw new Exception("Reauested User Not Found!.");
+
+
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                //Where
+                Expression<Func<User, bool>> filter = i => i.Id == userId;
+
+                var entity = await _userRepository.FindAsync(filter);
+
+                entity!.IsActive = isActive;
+
+                await _userRepository.UpdateAsync(entity);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
@@ -160,14 +250,19 @@ namespace BookShop.Controllers
         {
             try
             {
-                var user = await _context.Users.FirstOrDefaultAsync(i => i.Id == id) ?? throw new Exception($"User whith this ID:{id} Nof Found!.");
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
-                return Ok("User Removed Successfuly!.");
+                //Where
+                Expression<Func<User, bool>> filter = i => i.Id == id;
+
+                await _userRepository.DeleteAsync(filter);
+
+                return Ok();
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-
                 return BadRequest(ex.Message);
             }
         }
