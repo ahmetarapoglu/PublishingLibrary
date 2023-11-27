@@ -161,7 +161,8 @@ namespace BookShop.Controllers
                     BookCount = model.BookCount,
                     CostPrice = model.CostPrice,
                     SellPrice = model.SellPrice,
-                    LibraryRatio = model.LibraryRatio
+                    LibraryRatio = model.LibraryRatio,
+                    CreateDate = DateTime.Now,
                 };
 
                 await _versionRepository.AddAsync(entity);

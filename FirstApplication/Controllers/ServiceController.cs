@@ -29,7 +29,7 @@ namespace BookShop.Controllers
         {
             try
             {
-                await _emailService.SendEmailAsync(model);
+                await _emailService.SendEmailAsync(model.To , model.Subject , model.Body);
                 return Ok("Email sent successfully");
             }
             catch (OzelException ex)
@@ -56,8 +56,7 @@ namespace BookShop.Controllers
 
                 var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files");
 
-                if (!Directory.Exists(filepath))
-                    Directory.CreateDirectory(filepath);
+                FileExtensions.CreateDirectory(filepath);
 
                 var exactpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files", filename);
 
@@ -87,7 +86,7 @@ namespace BookShop.Controllers
                 int[] imageSizeInt = JsonConvert.DeserializeObject<int[]>(imageSize ?? "[]")!;
 
                 var path = "wwwroot/Upload/Files/";
-             
+
                 var fileName = await FileExtensions.SharpUploadFile(file, path, extension);
 
                 if (!file.ContentType.Contains("image"))
@@ -96,8 +95,7 @@ namespace BookShop.Controllers
                 }
 
                 var thumbPath = path + "thumb/";
-                if(!Directory.Exists(thumbPath))
-                    Directory.CreateDirectory(thumbPath);  
+                FileExtensions.CreateDirectory(thumbPath);
 
                 if(thumbSize > 0)
                 {
@@ -106,8 +104,7 @@ namespace BookShop.Controllers
                 }
 
                 var resizePath = path + "resize/";
-                if (!Directory.Exists(resizePath))
-                    Directory.CreateDirectory(resizePath);
+                FileExtensions.CreateDirectory(resizePath);
 
                 if (imageSizeInt?.Length > 0)
                 {
@@ -130,6 +127,61 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> SharpUploadFileBase64(
+            string fileBase64,
+            int thumbSize,
+            string imageSize,
+            EnumFileExtension extension = EnumFileExtension.Webp)
+        {
+            try
+            {
+                int[] imageSizeInt = JsonConvert.DeserializeObject<int[]>(imageSize ?? "[]")!;
+
+                var path = "wwwroot/Upload/Files/";
+
+                var fileName = await FileExtensions.UploadFileBase64(fileBase64, path, extension);
+
+                var thumbPath = path + "thumb/";
+                FileExtensions.CreateDirectory(thumbPath);
+
+                if (!Directory.Exists(thumbPath))
+                    Directory.CreateDirectory(thumbPath);
+
+                if (thumbSize > 0)
+                {
+                    _ = await FileExtensions.SharpResizeImageAsync(
+                        path + fileName, thumbPath + fileName, thumbSize);
+                }
+
+                var resizePath = path + "resize/";
+                FileExtensions.CreateDirectory(resizePath);
+
+
+                if (imageSize!.Length > 0)
+                {
+                    foreach (var size in imageSize)
+                    {
+                        var newFileName = size.ToString() + "_" + fileName;
+                        _ = await FileExtensions.SharpResizeImageAsync(
+                            path + fileName, resizePath + newFileName, size);
+                    }
+                }
+
+                return Ok(fileName);
+            }
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         [HttpDelete]
         [Route("[action]")]

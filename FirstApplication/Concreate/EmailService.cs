@@ -13,7 +13,7 @@ public class EmailService : IEmailService
         _emailSettings = emailSettings.Value;
     }
 
-    public async Task SendEmailAsync(EmailRequest model)
+    public async Task SendEmailAsync(string to, string subject, string body)
     {
         var smtpClient = new SmtpClient
         {
@@ -26,12 +26,12 @@ public class EmailService : IEmailService
         var mailMessage = new MailMessage
         {
             From = new MailAddress(_emailSettings.Sender, _emailSettings.SenderName),
-            Subject = model.Subject,
-            Body = model.Body,
+            Subject = subject,
+            Body = body,
             IsBodyHtml = true,
         };
 
-        mailMessage.To.Add(model.To);
+        mailMessage.To.Add(to);
 
         await smtpClient.SendMailAsync(mailMessage);
     }

@@ -1,32 +1,16 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638362898187095550.pdf",
-      "PackagePath": "staticwebassets\\Upload\\Files\\638362898187095550.pdf"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638366307563953515.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\638366307563953515.Webp"
     },
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638362898334118750.png",
-      "PackagePath": "staticwebassets\\Upload\\Files\\638362898334118750.png"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\720_638366307563953515.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\720_638366307563953515.Webp"
     },
     {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638362904823230318.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Files\\638362904823230318.Webp"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\720_638362898334118750.png",
-      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\720_638362898334118750.png"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\720_638362904823230318.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\720_638362904823230318.Webp"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638362898334118750.png",
-      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638362898334118750.png"
-    },
-    {
-      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638362904823230318.Webp",
-      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638362904823230318.Webp"
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638366307563953515.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638366307563953515.Webp"
     },
     {
       "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.BookShop.Microsoft.AspNetCore.StaticWebAssets.props",

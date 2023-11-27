@@ -4,6 +4,6 @@ namespace BookShop.Abstract
 {
     public interface IEmailService
     {
-        Task SendEmailAsync(EmailRequest model);
+        Task SendEmailAsync(string to, string subject, string body);
     }
 }

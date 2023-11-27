@@ -20,16 +20,16 @@ namespace BookShop.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
         private readonly IRepository<User> _userRepository;
+        private readonly IAccountRepository<User> _accountRepository;
 
 
         public UserController(
-            UserManager<User> userManager,
-            IRepository<User> userRepository)
+            IRepository<User> userRepository,
+            IAccountRepository<User> accountRepository)
         {
-            _userManager = userManager;
             _userRepository = userRepository;
+            _accountRepository = accountRepository;
         }
 
         [HttpPost]
@@ -130,20 +130,12 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPost("AddUser")]
+        [HttpPost]
+        [Route("[action]")]
         public async Task<IActionResult> AddUser(UserCModel model)
         {
             try
             {
-                // Search by username
-                var userByUsername = await _userManager.FindByNameAsync(model.UserName);
-                                        
-                // If not found by username, search by email
-                var userByEmail = await _userManager.FindByEmailAsync(model.Email);
-
-                if (userByUsername != null || userByEmail != null)
-                    throw new OzelException(ErrorProvider.NotValid);
-
                 var user = new User()
                 {
                     UserName = model.UserName,
@@ -154,7 +146,9 @@ namespace BookShop.Controllers
                     EmailConfirmed = true,
                 };
 
-                await _userManager!.CreateAsync(user, model.Password);
+                var domain = HttpContext.Request.Scheme + "//" + HttpContext.Request.Host.Value;
+
+                await _accountRepository.CreateUser(user, model.Password, domain);
 
                 return Ok();
             }

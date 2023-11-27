@@ -20,7 +20,7 @@ namespace BookShop.Concreate
             _configuration = configuration;
         }
 
-        public async Task<string> Register(RegisterRequest request)
+        public async Task<string> Register(RegisterModel request)
         {
             var userByEmail = await _userManager.FindByEmailAsync(request.Email);
             var userByUsername = await _userManager.FindByNameAsync(request.UserName);
@@ -43,10 +43,10 @@ namespace BookShop.Concreate
                 throw new ArgumentException($"Unable to register user {request.UserName} errors: {GetErrorsText(result.Errors)}");
             }
 
-            return await Login(new LoginRequest { UserName = request.Email, Password = request.Password });
+            return await Login(new LoginModel { UserName = request.Email, Password = request.Password });
         }
 
-        public async Task<string> Login(LoginRequest request)
+        public async Task<string> Login(LoginModel request)
         {
             var user = await _userManager.FindByNameAsync(request.UserName);
 

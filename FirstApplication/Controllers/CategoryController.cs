@@ -137,6 +137,7 @@ namespace BookShop.Controllers
                 var entity = new Category
                 {
                     CategoryName = model.CategoryName,
+                    CreateDate = DateTime.Now,
                 };
 
                 await _categoryrepository.AddAsync(entity);

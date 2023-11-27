@@ -208,6 +208,7 @@ namespace BookShop.Controllers
                 {
                     NameSurname = model.NameSurname,
                     Image = model.Image,
+                    CreateDate = DateTime.Now,
                     AuthorAddress = new AuthorAddress
                     {
                         Country = model.AuthorAddress.Country,

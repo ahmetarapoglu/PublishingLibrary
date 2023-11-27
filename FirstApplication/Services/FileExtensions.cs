@@ -1,6 +1,7 @@
 ﻿using BookShop.Enum;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using SixLabors.ImageSharp.Formats.Webp;
 using System.IO;
 
@@ -47,6 +48,8 @@ namespace BookShop.Services
             }
         }
 
+
+
         public async static Task<string?> SharpUploadFile (
             this IFormFile formFile,
             string path,
@@ -67,8 +70,7 @@ namespace BookShop.Services
                     var tempFileName = fileName + extensionFile;
                     var tempFilePath = tempPath + tempFileName;
 
-                    if (!Directory.Exists(tempPath))
-                        Directory.CreateDirectory(tempPath);
+                    CreateDirectory(tempPath);
 
                     using var stream = File.OpenWrite(tempFilePath);
                     await formFile.CopyToAsync(stream);
@@ -78,8 +80,8 @@ namespace BookShop.Services
                 }
                 else
                 {
-                    if (!Directory.Exists(path))
-                        Directory.CreateDirectory(path);
+
+                    CreateDirectory(path);
 
                     fileName += extensionFile;
                     using var stream = File.OpenWrite(path + fileName);
@@ -94,31 +96,77 @@ namespace BookShop.Services
             }
         }
 
+
+
+        public static async Task<string> UploadFileBase64(
+            string? fileBase64,
+            string path,
+            EnumFileExtension extension = EnumFileExtension.Webp)
+        {
+            try
+            {
+                if (fileBase64 == null) return null;
+
+                if (!fileBase64.Contains(";base64"))
+                    throw new OzelException(ErrorProvider.NotValid);
+
+                var s = Math.Max(fileBase64.IndexOf(":"),0) + 1;
+
+                var contentType = fileBase64[s..fileBase64.IndexOf(";base64")];
+                MimeTypes.TryGetExtension(contentType, out string ext);
+
+                var fileName = $"{ext}";
+
+                var tempPath = path + "temp/";
+
+                CreateDirectory(path);
+
+                fileBase64 = fileBase64[(fileBase64.IndexOf(";base64") + 8)..];
+
+                var bytes = Convert.FromBase64String(fileBase64);
+                File.WriteAllBytes(tempPath + fileName, bytes);
+
+                if(contentType.Contains("image"))
+                    return await SharpSaveFile(tempPath ,path, fileName, extension);
+
+                return fileName;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
+
         public static async Task<SixLabors.ImageSharp.Image> SharpResizeImageAsync(
             string sourcePath,
             string destinationPath,
             int size,
             CancellationToken token = default)
         {
-            var image  = await SixLabors.ImageSharp.Image.LoadAsync(sourcePath, token);
+            var image = await SixLabors.ImageSharp.Image.LoadAsync(sourcePath, token);
 
-            var ratioX = (double)size / image.Width; 
+            var ratioX = (double)size / image.Width;
             var ratioY = (double)size / image.Height;
-            var ratio  = Math.Min(ratioX, ratioY);
+            var ratio = Math.Min(ratioX, ratioY);
 
             using var stream = File.Create(destinationPath);
 
-            if(ratio <= 1) 
+            if (ratio <= 1)
             {
-               var width  = (int)(image.Width * ratio);
-               var height = (int)(image.Height * ratio);
-               image.Mutate(x =>x.Resize(width, height)); 
+                var width = (int)(image.Width * ratio);
+                var height = (int)(image.Height * ratio);
+                image.Mutate(x => x.Resize(width, height));
             }
             await image.SaveAsync(stream, WebpFormat.Instance, cancellationToken: token);
             await stream.DisposeAsync();
 
             return image;
         }
+
+
 
         public static bool Delete(string folderName , string fileName)
         {
@@ -139,6 +187,12 @@ namespace BookShop.Services
             catch { 
               return false;
             }
+        }
+
+        public static void CreateDirectory(string pathName)
+        {
+            if (!Directory.Exists(pathName))
+                Directory.CreateDirectory(pathName);
         }
 
     }

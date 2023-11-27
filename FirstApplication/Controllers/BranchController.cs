@@ -1,22 +1,13 @@
 ﻿using BookShop.Abstract;
-using BookShop.Db;
 using BookShop.Entities;
-using BookShop.Models.AuthorAddressModels;
-using BookShop.Models.AuthorBiyografi;
-using BookShop.Models.AuthorModels;
-using BookShop.Models.BookVersionModels;
 using BookShop.Models.BranchModels;
 using BookShop.Models.OrderModels;
 using BookShop.Models.RequestModels;
 using BookShop.Services;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using static NuGet.Packaging.PackagingConstants;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
 {
@@ -160,6 +151,7 @@ namespace BookShop.Controllers
                     BranchName = model.BranchName,
                     BranchAddress = model.BranchAddress,
                     PhoneNumber = model.PhoneNumber,
+                    CreateDate = DateTime.Now,
                 };
 
                 await _branchRepository.AddAsync(entity);

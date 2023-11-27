@@ -146,7 +146,8 @@ namespace BookShop.Controllers
                     BranchId = model.BranchId,
                     BookVersionId = model.BookVersionId,
                     BookCount = model.BookCount,
-                    IsInvoiced = false
+                    IsInvoiced = false,
+                    CreateDate = DateTime.Now,
                 };
 
                 await _orderRepository.AddAsync(entity);

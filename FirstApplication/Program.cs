@@ -21,14 +21,14 @@ var service = builder.Services;
 #region DatabaseConnection
 
 // 1. DbContext
-builder.Services.AddDbContext<AppDbContext>();
+service.AddDbContext<AppDbContext>();
 
 #endregion
 
 #region Identity
 
 // 2. Identity
-builder.Services.AddIdentity<User, Role>(p =>
+service.AddIdentity<User, Role>(p =>
 {
     p.Password.RequiredLength = 8;
     p.Password.RequireNonAlphanumeric = true;
@@ -47,7 +47,7 @@ builder.Services.AddIdentity<User, Role>(p =>
 #region Jwt
 
 // 3. Adding Authentication
-builder.Services.AddAuthentication(options =>
+service.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -63,6 +63,8 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuer = true,
         ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
         ValidAudience = configuration["JWT:ValidAudience"],
         ValidIssuer = configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]!))
@@ -73,39 +75,41 @@ builder.Services.AddAuthentication(options =>
 
 #region Scoped
 
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<IRepository<Category>, GenericRepository<Category>>();
-builder.Services.AddScoped<IRepository<Author>, GenericRepository<Author>>();
-builder.Services.AddScoped<IRepository<Book>, GenericRepository<Book>>();
-builder.Services.AddScoped<IRepository<Branch>, GenericRepository<Branch>>();
-builder.Services.AddScoped<IRepository<Invoice>, GenericRepository<Invoice>>();
-builder.Services.AddScoped<IRepository<Order>, GenericRepository<Order>>();
-builder.Services.AddScoped<IRepository<User>, GenericRepository<User>>();
-builder.Services.AddScoped<IRepository<BookVersion>, GenericRepository<BookVersion>>();
+service.AddScoped<IAuthenticationService, AuthenticationService>();
+service.AddScoped<IRepository<Category>, GenericRepository<Category>>();
+service.AddScoped<IRepository<Author>, GenericRepository<Author>>();
+service.AddScoped<IRepository<Book>, GenericRepository<Book>>();
+service.AddScoped<IRepository<Branch>, GenericRepository<Branch>>();
+service.AddScoped<IRepository<Invoice>, GenericRepository<Invoice>>();
+service.AddScoped<IRepository<Order>, GenericRepository<Order>>();
+service.AddScoped<IRepository<User>, GenericRepository<User>>();
+service.AddScoped<IRepository<BookVersion>, GenericRepository<BookVersion>>();
 
-builder.Services.AddScoped<IValidation<CategoryRequest>, Validation<CategoryRequest>>();
+service.AddScoped<IAccountRepository<User>, AccountRepository<User>>();
+
+service.AddScoped<IValidation<CategoryRequest>, Validation<CategoryRequest>>();
 
 #endregion
 
 #region Validations
 
-builder.Services.AddTransient<IValidator<CategoryRequest>, DataTableReqValidation>();
+service.AddTransient<IValidator<CategoryRequest>, DataTableReqValidation>();
 
 #endregion
 
 #region EmailSender
 
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddTransient<IEmailService, EmailService>();
+service.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+service.AddTransient<IEmailService, EmailService>();
 
 #endregion
 
 #region Controller
 
-builder.Services.AddControllers();
+service.AddControllers();
 
 //Add Service To the container.
-builder.Services.AddControllers().AddNewtonsoftJson(options =>
+service.AddControllers().AddNewtonsoftJson(options =>
 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
 
@@ -116,10 +120,10 @@ options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoop
 // 5. Swagger authentication
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
+service.AddEndpointsApiExplorer();
 
 
-builder.Services.AddSwaggerGen(c =>
+service.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Wedding Planner API", Version = "v1" });
     var SecurityScheme = new OpenApiSecurityScheme
@@ -148,7 +152,7 @@ builder.Services.AddSwaggerGen(c =>
 #region Cors
 
 // 6. Add CORS policy
-builder.Services.AddCors(options =>
+service.AddCors(options =>
 {
     options.AddPolicy("AllowAngularDevClient",
         b =>

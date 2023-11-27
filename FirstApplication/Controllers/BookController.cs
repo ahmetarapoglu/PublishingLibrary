@@ -1,22 +1,13 @@
 ﻿using BookShop.Abstract;
-using BookShop.Db;
 using BookShop.Entities;
-using BookShop.Models.AuthorAddressModels;
-using BookShop.Models.AuthorBiyografi;
-using BookShop.Models.AuthorModels;
 using BookShop.Models.BookModels;
 using BookShop.Models.BookVersionModels;
 using BookShop.Models.RequestModels;
 using BookShop.Services;
-using BookShop.Validations.ReqValidation;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NuGet.Versioning;
 using System.Linq.Expressions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BookShop.Controllers
 {
@@ -183,6 +174,7 @@ namespace BookShop.Controllers
                     PublishedDate = model.PublishedDate,
                     Cover = model.Cover,
                     CategoryId = model.CategoryId,
+                    CreateDate = DateTime.Now,
                     BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                     {
                         AuthorId = i.AuthorId,
@@ -203,7 +195,7 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
-       
+
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> UpdateBook(BookUModel model)
@@ -213,7 +205,7 @@ namespace BookShop.Controllers
             {
                 if (model.Id < 0 || model.Id == null)
                     throw new Exception("Reauested Book Not Found!.");
-              
+
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
 
