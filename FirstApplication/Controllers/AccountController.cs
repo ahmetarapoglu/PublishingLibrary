@@ -1,12 +1,8 @@
 ﻿using BookShop.Abstract;
-using BookShop.Concreate;
-using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Models.AccountModels;
 using BookShop.Models.UserModels;
 using BookShop.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -92,7 +88,7 @@ namespace BookShop.Controllers
             {
                 await _accountRepository.ConfirmEmailAsync(id, token);
 
-                return Ok();
+                return Ok(ErrorProvider.Success);
             }
 
             catch (OzelException ex)
@@ -115,7 +111,7 @@ namespace BookShop.Controllers
 
                 await _accountRepository.ForgetPasswordAsync(email, domain);
 
-                return Ok();
+                return Ok(ErrorProvider.Success);
             }
 
             catch (OzelException ex)
@@ -128,7 +124,7 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> VerifyUserTokenAsync(string userId, string token)
         {
@@ -136,7 +132,7 @@ namespace BookShop.Controllers
             {
                 await _accountRepository.VerifyUserTokenAsync(userId, token);
 
-                return Ok();
+                return Ok(ErrorProvider.Success);
             }
 
             catch (OzelException ex)
@@ -151,13 +147,68 @@ namespace BookShop.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> ResetPasswordAsync(string userId, string token, string newPassword)
+        public async Task<IActionResult> ResetPasswordAsync(string email, string token, string password, string newPassword)
         {
             try
             {
+                var user = await _userManager.FindByEmailAsync(email)
+                    ?? throw new OzelException(ErrorProvider.DataNotFound);
+
+                var userId = user.Id.ToString();
+
                 await _accountRepository.ResetPasswordAsync(userId, token, newPassword);
 
-                return Ok();
+                return Ok(ErrorProvider.Success);
+            }
+
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> ChangePasswordAsync(string password, string newPassword)
+        {
+            try
+            {
+                // Get the currently authenticated user
+                var user = await _userManager.GetUserAsync(User)
+                    ?? throw new OzelException(ErrorProvider.DataNotFound);
+
+                await _accountRepository.ChangePasswordAsync(user, password, newPassword);
+
+                return Ok(ErrorProvider.Success);
+            }
+
+            catch (OzelException ex)
+            {
+                return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> UpdateProfileAsync(UpdateAccountModel model)
+        {
+            try
+            {
+                // Get the currently authenticated user
+                var user = await _userManager.GetUserAsync(User)
+                    ?? throw new OzelException(ErrorProvider.DataNotFound);
+
+                await _accountRepository.UpdateProfileAsync(model, user);
+
+                return Ok(ErrorProvider.Success);
             }
 
             catch (OzelException ex)
@@ -177,7 +228,7 @@ namespace BookShop.Controllers
             try
             {
                 // Get the currently authenticated user
-                var user = await _userManager.GetUserAsync(User) 
+                var user = await _userManager.GetUserAsync(User)
                     ?? throw new OzelException(ErrorProvider.DataNotFound);
 
                 var profile = new UserRModel

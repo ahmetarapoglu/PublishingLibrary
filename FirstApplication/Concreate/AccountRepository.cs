@@ -72,10 +72,8 @@ namespace BookShop.Concreate
         {
             try
             {
-                var userById = await _userManager.FindByIdAsync(userId);
-
-                if (userById == null)
-                    throw new OzelException(ErrorProvider.DataNotFound);
+                var userById = await _userManager.FindByIdAsync(userId)
+                    ?? throw new OzelException(ErrorProvider.DataNotFound);
 
                 var result = await _userManager.ConfirmEmailAsync(userById!, token);
 
@@ -170,7 +168,58 @@ namespace BookShop.Concreate
                 var user = await _userManager.FindByIdAsync(userId)
                          ?? throw new OzelException(ErrorProvider.DataNotFound);
 
-                await _userManager.ResetPasswordAsync(user, token, newPassword);
+               var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+                //invalidToken
+                if (!result.Succeeded)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+            }
+            catch (OzelException ex)
+            {
+                throw new OzelException(ErrorProvider.NotValid);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public async Task ChangePasswordAsync(User user, string password, string newPassword)
+        {
+            try
+            {
+                var changePassword = await _userManager.ChangePasswordAsync(user, password, newPassword);
+
+                if (!changePassword.Succeeded)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+            }
+            catch (OzelException ex)
+            {
+                throw new OzelException(ErrorProvider.NotValid);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public async Task UpdateProfileAsync(UpdateAccountModel model , User user)
+        {
+            try
+            {
+                var checkPassword = await _userManager.CheckPasswordAsync(user, model.OldPassword);
+                if (!checkPassword)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+
+               var changePassword =  await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+               if (!changePassword.Succeeded)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+
+                user.Email = model.Email;
+                user.UserName = model.UserName;
+                user.Image = model.Image;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                    throw new OzelException(ErrorProvider.DataNotFound);
             }
             catch (OzelException ex)
             {

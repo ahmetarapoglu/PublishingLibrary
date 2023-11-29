@@ -1,4 +1,5 @@
 ﻿using BookShop.Entities;
+using BookShop.Models.AccountModels;
 
 namespace BookShop.Abstract
 {
@@ -10,5 +11,7 @@ namespace BookShop.Abstract
         Task ForgetPasswordAsync(string email, string domain);
         Task VerifyUserTokenAsync(string userId, string token);
         Task ResetPasswordAsync(string userId, string token, string newPassword);
+        Task ChangePasswordAsync(User user, string password, string newPassword);
+        Task UpdateProfileAsync(UpdateAccountModel model, User user);
     }
 }
