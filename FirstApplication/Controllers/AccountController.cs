@@ -5,6 +5,7 @@ using BookShop.Models.UserModels;
 using BookShop.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq.Expressions;
 
 namespace BookShop.Controllers
 {
@@ -12,40 +13,70 @@ namespace BookShop.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly UserManager<User> _userManager;
+        private readonly IRepository<User> _userRepository;
         private readonly IAccountRepository<User> _accountRepository;
 
 
         public AccountController(
             UserManager<User> userManager,
-            IAuthenticationService authenticationService,
+            IRepository<User> userRepository,
             IAccountRepository<User> accountRepository)
         {
-            _authenticationService = authenticationService;
             _userManager = userManager;
+            _userRepository = userRepository;
             _accountRepository = accountRepository;
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel request)
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Login(LoginModel model)
         {
-            var response = await _authenticationService.Login(request);
-            var data = await _userManager.FindByNameAsync(request.UserName);
+            var token = await _accountRepository.Login(model);
 
-            if (data is null)
+            //Where
+            Expression<Func<User, bool>> filter = i => i.Email == model.UserName
+                                                    || i.UserName == model.UserName;
+
+            //Select
+            static IQueryable<AuthenticationUser> select(IQueryable<User> query) => query.Select(entity => new AuthenticationUser
             {
-                data = await _userManager.FindByEmailAsync(request.UserName);
+                Id = entity.Id,
+                Email = entity.Email!,
+                UserName = entity.UserName!,
+                IsActive = entity.IsActive,
+                Image = entity.Image,
+                CreateDate = entity.CreateDate,
+                RoleName = entity.UserRoles.Select(i => i.Role.Name).ToList()!,
+            });
+
+            var user = await _userRepository.FindAsync(select, filter);
+
+            return Ok(new {token ,user});
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                // Get the currently authenticated user
+                var user = await _userManager.GetUserAsync(User)
+                    ?? throw new OzelException(ErrorProvider.DataNotFound);
+
+                await _accountRepository.Logout(user);
+
+                return Ok();
             }
-
-            var user = new UserRModel
+            catch (OzelException ex)
             {
-                Id = data.Id,
-                UserName = data.UserName,
-                Email = data.Email
-            };
-
-            return Ok(new { token = response, user });
+                throw new OzelException(ErrorProvider.NotValid);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -251,5 +282,6 @@ namespace BookShop.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
     }
 }

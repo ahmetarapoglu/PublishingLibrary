@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,13 +29,18 @@ service.AddDbContext<AppDbContext>();
 #region Identity
 
 // 2. Identity
-service.AddIdentity<User, Role>(p =>
+service.AddIdentity<User, Role>(options =>
 {
-    p.Password.RequiredLength = 8;
-    p.Password.RequireNonAlphanumeric = true;
-    p.Password.RequireDigit = true;
-    p.Password.RequireLowercase = true;
-    p.Password.RequireUppercase = true;
+    // Password settings
+    options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    // Lockout settings
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+    options.Lockout.MaxFailedAccessAttempts = 3;
 })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders()
@@ -43,6 +49,12 @@ service.AddIdentity<User, Role>(p =>
 
 
 #endregion
+
+service.Configure<SecurityStampValidatorOptions>(options =>
+{
+    options.ValidationInterval = TimeSpan.Zero;
+});
+
 
 #region Jwt
 

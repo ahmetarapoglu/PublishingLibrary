@@ -49,6 +49,7 @@ namespace BookShop.Seed
 							UserName = userName,
 							Email = email,
 							EmailConfirmed = true,
+							CreateDate = DateTime.Now,
 							UserRoles = roleIds?.Select(i =>
 								new UserRole
 								{

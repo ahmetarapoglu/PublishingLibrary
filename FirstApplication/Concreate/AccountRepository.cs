@@ -4,7 +4,10 @@ using BookShop.Models.AccountModels;
 using BookShop.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace BookShop.Concreate
@@ -28,7 +31,71 @@ namespace BookShop.Concreate
             _configuration = configuration;
             _emailService = emailService;
         }
+        public async Task<string> Login(LoginModel model)
+        {
+            try
+            {
+                var user = await _userManager.FindByNameAsync(model.UserName!)
+                            ?? await _userManager.FindByEmailAsync(model.UserName!)
+                            ?? throw new OzelException(ErrorProvider.DataNotFound);
 
+                var checkLockout = await _userManager.IsLockedOutAsync(user);
+                if (checkLockout)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+
+                if (!user.EmailConfirmed)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+
+                if (!user.IsActive)
+                    throw new OzelException(ErrorProvider.DataNotFound);
+
+                var checkPassword = await _userManager.CheckPasswordAsync(user!, model.Password!);
+                if (!checkPassword)
+                {
+                    // Increment failed login attempts
+                    await _userManager.AccessFailedAsync(user);
+                    throw new OzelException(ErrorProvider.DataNotFound);
+                }
+
+                // Reset lockout count upon successful login
+                await _userManager.ResetAccessFailedCountAsync(user);
+
+                var authClaims = new List<Claim>
+                {
+                    new(ClaimTypes.Name, user.UserName!),
+                    new(ClaimTypes.Email, user.Email!),
+                    new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+
+                var token = new JwtSecurityTokenHandler().WriteToken(GenerateJwtToken(authClaims));
+
+                return token;
+            }
+            catch (OzelException ex)
+            {
+                throw new OzelException(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+        public async Task Logout(User user)
+        {
+            try
+            {
+                await _userManager.UpdateSecurityStampAsync(user);
+            }
+            catch (OzelException ex)
+            {
+                throw new OzelException(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
         public async Task CreateUser(User user, string password , string domain)
         {
             try
@@ -230,7 +297,19 @@ namespace BookShop.Concreate
                 throw new Exception(ex.Message);
             }
         }
+        private JwtSecurityToken GenerateJwtToken(IEnumerable<Claim> authClaims)
+        {
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
+            var authCreds = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256);
 
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                expires: DateTime.Now.AddHours(24),
+                claims: authClaims,
+                signingCredentials: authCreds);
 
+            return token;
+        }
     }
 }

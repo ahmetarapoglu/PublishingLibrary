@@ -5,6 +5,8 @@ namespace BookShop.Abstract
 {
     public interface IAccountRepository<T> where T : class
     {
+        Task<string> Login(LoginModel model);
+        Task Logout(User user);
         Task CreateUser(User user, string password, string domain);
         Task ConfirmEmailAsync(string userId, string token);
         Task IsEmailConfirmedAsync(User user);
