@@ -54,18 +54,24 @@ namespace BookShop.Concreate
                 {
                     // Increment failed login attempts
                     await _userManager.AccessFailedAsync(user);
+                    await _userManager.SetLockoutEnabledAsync(user,true);
                     throw new OzelException(ErrorProvider.DataNotFound);
                 }
 
                 // Reset lockout count upon successful login
                 await _userManager.ResetAccessFailedCountAsync(user);
 
+                await _userManager.SetLockoutEndDateAsync(user,null);
+
+                await _userManager.UpdateSecurityStampAsync(user);
+
                 var authClaims = new List<Claim>
                 {
                     new(ClaimTypes.Name, user.UserName!),
                     new(ClaimTypes.Email, user.Email!),
                     new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    //new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new(JwtRegisteredClaimNames.Jti, user.SecurityStamp!),
                 };
 
                 var token = new JwtSecurityTokenHandler().WriteToken(GenerateJwtToken(authClaims));

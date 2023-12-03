@@ -37,7 +37,6 @@ namespace BookShop.Controllers
             //Where
             Expression<Func<User, bool>> filter = i => i.Email == model.UserName
                                                     || i.UserName == model.UserName;
-
             //Select
             static IQueryable<AuthenticationUser> select(IQueryable<User> query) => query.Select(entity => new AuthenticationUser
             {

@@ -27,8 +27,6 @@ namespace BookShop.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetBooks(BookRequest model)
         {
-
-
             try
             {
                 //Where.

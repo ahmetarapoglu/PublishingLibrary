@@ -5,9 +5,9 @@ using FluentValidation;
 namespace BookShop.Validations.ReqValidation
 {
 
-    public class DataTableReqValidation : AbstractValidatorBase<DataTableRequest>
+    public class DataTableReqValidator : AbstractValidatorBase<DataTableRequest>
     {
-        public DataTableReqValidation()
+        public DataTableReqValidator()
         {
             RuleFor(i => i.Current)
                 .GreaterThan(0).WithMessage("CurrentPage must be greater than 0.").WithErrorCode("Re-01");

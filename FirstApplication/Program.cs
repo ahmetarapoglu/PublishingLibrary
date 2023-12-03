@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,10 +30,12 @@ service.AddDbContext<AppDbContext>();
 // 2. Identity
 service.AddIdentity<User, Role>(options =>
 {
+    //User
+    options.User.RequireUniqueEmail = true;
     // Password settings
     options.Password.RequiredLength = 8;
-    options.Password.RequireNonAlphanumeric = true;
     options.Password.RequireDigit = true;
+    options.Password.RequireNonAlphanumeric = true;
     options.Password.RequireLowercase = true;
     options.Password.RequireUppercase = true;
     // Lockout settings
@@ -49,12 +50,6 @@ service.AddIdentity<User, Role>(options =>
 
 
 #endregion
-
-service.Configure<SecurityStampValidatorOptions>(options =>
-{
-    options.ValidationInterval = TimeSpan.Zero;
-});
-
 
 #region Jwt
 
@@ -87,7 +82,6 @@ service.AddAuthentication(options =>
 
 #region Scoped
 
-service.AddScoped<IAuthenticationService, AuthenticationService>();
 service.AddScoped<IRepository<Category>, GenericRepository<Category>>();
 service.AddScoped<IRepository<Author>, GenericRepository<Author>>();
 service.AddScoped<IRepository<Book>, GenericRepository<Book>>();
@@ -98,14 +92,6 @@ service.AddScoped<IRepository<User>, GenericRepository<User>>();
 service.AddScoped<IRepository<BookVersion>, GenericRepository<BookVersion>>();
 
 service.AddScoped<IAccountRepository<User>, AccountRepository<User>>();
-
-service.AddScoped<IValidation<CategoryRequest>, Validation<CategoryRequest>>();
-
-#endregion
-
-#region Validations
-
-service.AddTransient<IValidator<CategoryRequest>, DataTableReqValidation>();
 
 #endregion
 
@@ -193,13 +179,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//7. Use CORS
+//7.Use CORS
 app.UseCors("AllowAngularDevClient");
 
 app.UseHttpsRedirection();
 
-// 8. Authentication
+// 8.Use Authentication
 app.UseAuthentication();
+
+// 9.Use Middleware
+app.UseMiddleware<MyMiddleware>();
 
 app.UseAuthorization();
 

@@ -3,11 +3,10 @@ using BookShop.Entities;
 using BookShop.Models.CategoryModels;
 using BookShop.Models.RequestModels;
 using BookShop.Services;
+using BookShop.Validations.ReqValidation;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace BookShop.Controllers
@@ -18,25 +17,21 @@ namespace BookShop.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly IRepository<Category> _categoryrepository;
-        private readonly IValidation<CategoryRequest> _validate;
-
 
         public CategoryController(
-            IRepository<Category> categoryrepository,
-            IValidation<CategoryRequest> validate)
+            IRepository<Category> categoryrepository)
         {
             _categoryrepository = categoryrepository;
-            _validate = validate;
         }
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetCategories(CategoryRequest model)
+        public async Task<IActionResult> GetCategories(DataTableRequest model)
         {
             try
             {
                 //Validation
-                _validate.Validator(model);
+                model.Validate(new DataTableReqValidator());
 
                 //Where.
                 Expression<Func<Category, bool>> filter = i => true;
@@ -162,11 +157,11 @@ namespace BookShop.Controllers
             {
                 if (model.Id == 0 || model.Id == null)
                     throw new Exception("Reauested Category Not Found!.");
-                
+
 
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
-               
+
                 //Where
                 Expression<Func<Category, bool>> filter = i => i.Id == model.Id;
 

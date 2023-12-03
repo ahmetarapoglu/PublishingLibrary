@@ -115,7 +115,7 @@ namespace BookShop.Services
                 var contentType = fileBase64[s..fileBase64.IndexOf(";base64")];
                 MimeTypes.TryGetExtension(contentType, out string ext);
 
-                var fileName = $"{ext}";
+                string fileName = DateTime.Now.Ticks.ToString() + ext;
 
                 var tempPath = path + "temp/";
 

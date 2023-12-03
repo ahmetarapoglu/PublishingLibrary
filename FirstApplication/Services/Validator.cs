@@ -7,6 +7,7 @@ namespace BookShop.Services
     {
         public void Validator(T model);
     }
+
     public class Validation<T> : IValidation<T> where T : class
     {
         private readonly IValidator<T> _requestValidator;
