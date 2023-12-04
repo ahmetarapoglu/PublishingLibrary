@@ -142,11 +142,6 @@ namespace BookShop.Controllers
             {
                 if (model.BookId == 0 || model.BookId == null)
                     throw new Exception("Reauested Book Not Found!.");
-                
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
 
                 var book = await _context.Books
                     .Include(i => i.BookVersions)
@@ -188,9 +183,6 @@ namespace BookShop.Controllers
             {
                 if (model.Id < 0 || model.Id == null)
                     throw new Exception("Reauested Version Not Found!.");
-               
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
                 //Where
                 Expression<Func<BookVersion, bool>> filter = i => i.Id == model.Id;

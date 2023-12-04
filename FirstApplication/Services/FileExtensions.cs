@@ -119,7 +119,7 @@ namespace BookShop.Services
 
                 var tempPath = path + "temp/";
 
-                CreateDirectory(path);
+                CreateDirectory(tempPath);
 
                 fileBase64 = fileBase64[(fileBase64.IndexOf(";base64") + 8)..];
 
@@ -193,6 +193,12 @@ namespace BookShop.Services
         {
             if (!Directory.Exists(pathName))
                 Directory.CreateDirectory(pathName);
+        }
+
+        public class Base64UploadModel { 
+            public string fileBase64 { get; set; }
+            public int thumbSize { get; set; }
+            public List<int> imageSize { get; set; }
         }
 
     }

@@ -138,8 +138,6 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
                 var entity = new Order
                 {
@@ -172,9 +170,6 @@ namespace BookShop.Controllers
             {
                 if (model.Id < 0 || model.Id == null)
                     throw new Exception("Reauested Order Not Found!.");
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
                 //Where
                 Expression<Func<Order, bool>> filter = i => i.Id == model.Id;

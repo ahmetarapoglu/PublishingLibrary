@@ -162,9 +162,6 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
                 var entity = new Book
                 {
                     Title = model.Title,
@@ -203,9 +200,6 @@ namespace BookShop.Controllers
             {
                 if (model.Id < 0 || model.Id == null)
                     throw new Exception("Reauested Book Not Found!.");
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
                 //Where
                 Expression<Func<Book, bool>> filter = i => i.Id == model.Id;

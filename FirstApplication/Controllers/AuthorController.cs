@@ -200,10 +200,6 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-                
-
                 var entity = new Author
                 {
                     NameSurname = model.NameSurname,
@@ -246,10 +242,6 @@ namespace BookShop.Controllers
             {
                 if (model.Id == 0 || model.Id == null)
                     throw new Exception("Reauested Author Not Found!.");
-                
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
                
 
                 //Where

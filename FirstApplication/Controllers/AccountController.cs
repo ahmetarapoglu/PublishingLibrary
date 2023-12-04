@@ -32,26 +32,37 @@ namespace BookShop.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            var token = await _accountRepository.Login(model);
-
-            //Where
-            Expression<Func<User, bool>> filter = i => i.Email == model.UserName
-                                                    || i.UserName == model.UserName;
-            //Select
-            static IQueryable<AuthenticationUser> select(IQueryable<User> query) => query.Select(entity => new AuthenticationUser
+            try
             {
-                Id = entity.Id,
-                Email = entity.Email!,
-                UserName = entity.UserName!,
-                IsActive = entity.IsActive,
-                Image = entity.Image,
-                CreateDate = entity.CreateDate,
-                RoleName = entity.UserRoles.Select(i => i.Role.Name).ToList()!,
-            });
+                var token = await _accountRepository.Login(model);
 
-            var user = await _userRepository.FindAsync(select, filter);
+                //Where
+                Expression<Func<User, bool>> filter = i => i.Email == model.UserName
+                                                        || i.UserName == model.UserName;
+                //Select
+                static IQueryable<AuthenticationUser> select(IQueryable<User> query) => query.Select(entity => new AuthenticationUser
+                {
+                    Id = entity.Id,
+                    Email = entity.Email!,
+                    UserName = entity.UserName!,
+                    IsActive = entity.IsActive,
+                    Image = entity.Image,
+                    CreateDate = entity.CreateDate,
+                    RoleName = entity.UserRoles.Select(i => i.Role.Name).ToList()!,
+                });
 
-            return Ok(new {token ,user});
+                var user = await _userRepository.FindAsync(select, filter);
+
+                return Ok(new { token, user });
+            }
+            catch (OzelException ex)
+            {
+               return BadRequest(ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
@@ -70,11 +81,11 @@ namespace BookShop.Controllers
             }
             catch (OzelException ex)
             {
-                throw new OzelException(ErrorProvider.NotValid);
+                return BadRequest(ex.Errors);
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 

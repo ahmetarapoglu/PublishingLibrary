@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -18,7 +19,6 @@ namespace BookShop.Concreate
         private readonly SignInManager<User> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
-
 
         public AccountRepository(
             UserManager<User> userManager,
@@ -290,6 +290,8 @@ namespace BookShop.Concreate
                 user.UserName = model.UserName;
                 user.Image = model.Image;
 
+                await _userManager.UpdateSecurityStampAsync(user);
+
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                     throw new OzelException(ErrorProvider.DataNotFound);
@@ -307,11 +309,10 @@ namespace BookShop.Concreate
         {
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
             var authCreds = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
                 issuer: _configuration["JWT:ValidIssuer"],
                 audience: _configuration["JWT:ValidAudience"],
-                expires: DateTime.Now.AddHours(24),
+                expires: DateTime.Now.AddHours(3),
                 claims: authClaims,
                 signingCredentials: authCreds);
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.IO;
+using static BookShop.Services.FileExtensions;
 
 namespace BookShop.Controllers
 {
@@ -76,9 +77,9 @@ namespace BookShop.Controllers
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> SharpUploadFile(
-            IFormFile file,
             int thumbSize,
             string imageSize,
+            IFormFile file,
             EnumFileExtension extension = EnumFileExtension.Webp)
         {
             try
@@ -106,7 +107,7 @@ namespace BookShop.Controllers
                 var resizePath = path + "resize/";
                 FileExtensions.CreateDirectory(resizePath);
 
-                if (imageSizeInt?.Length > 0)
+                if (imageSizeInt.Length > 0)
                 {
                     foreach (var size in imageSizeInt)
                     {
@@ -131,18 +132,14 @@ namespace BookShop.Controllers
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> SharpUploadFileBase64(
-            string fileBase64,
-            int thumbSize,
-            string imageSize,
+            Base64UploadModel model,
             EnumFileExtension extension = EnumFileExtension.Webp)
-        {
+        { 
             try
             {
-                int[] imageSizeInt = JsonConvert.DeserializeObject<int[]>(imageSize ?? "[]")!;
-
                 var path = "wwwroot/Upload/Files/";
 
-                var fileName = await FileExtensions.UploadFileBase64(fileBase64, path, extension);
+                var fileName = await FileExtensions.UploadFileBase64(model.fileBase64, path, extension);
 
                 var thumbPath = path + "thumb/";
                 FileExtensions.CreateDirectory(thumbPath);
@@ -150,19 +147,19 @@ namespace BookShop.Controllers
                 if (!Directory.Exists(thumbPath))
                     Directory.CreateDirectory(thumbPath);
 
-                if (thumbSize > 0)
+                if (model.thumbSize > 0)
                 {
                     _ = await FileExtensions.SharpResizeImageAsync(
-                        path + fileName, thumbPath + fileName, thumbSize);
+                        path + fileName, thumbPath + fileName, model.thumbSize);
                 }
 
                 var resizePath = path + "resize/";
                 FileExtensions.CreateDirectory(resizePath);
 
 
-                if (imageSize!.Length > 0)
+                if (model.imageSize.Count > 0)
                 {
-                    foreach (var size in imageSize)
+                    foreach (var size in model.imageSize)
                     {
                         var newFileName = size.ToString() + "_" + fileName;
                         _ = await FileExtensions.SharpResizeImageAsync(

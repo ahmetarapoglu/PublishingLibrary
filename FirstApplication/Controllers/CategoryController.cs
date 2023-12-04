@@ -124,11 +124,6 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
                 var entity = new Category
                 {
                     CategoryName = model.CategoryName,
@@ -157,10 +152,6 @@ namespace BookShop.Controllers
             {
                 if (model.Id == 0 || model.Id == null)
                     throw new Exception("Reauested Category Not Found!.");
-
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
                 //Where
                 Expression<Func<Category, bool>> filter = i => i.Id == model.Id;

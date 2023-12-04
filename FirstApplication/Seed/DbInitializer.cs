@@ -40,7 +40,13 @@ namespace BookShop.Seed
 				}
 
 				//Create User Function.
-				async Task CreateUserAsync (string userName , string email , string password ="Admin.123" ,params int[]? roleIds)
+				async Task CreateUserAsync (
+					string userName ,
+					string email ,
+					string Image,
+					bool IsActive,
+					string password ="Admin.123",
+					params int[]? roleIds)
 				{
 					if (!await context.Users.AnyAsync(i=>i.Email == email))
 					{
@@ -48,7 +54,9 @@ namespace BookShop.Seed
 						{
 							UserName = userName,
 							Email = email,
-							EmailConfirmed = true,
+                            Image = Image,
+		                    IsActive = IsActive,
+                            EmailConfirmed = true,
 							CreateDate = DateTime.Now,
 							UserRoles = roleIds?.Select(i =>
 								new UserRole
@@ -67,13 +75,12 @@ namespace BookShop.Seed
 				var userRole = await CreateRoleAsync(SystemRoles.User);
 
                 //Create the user whith a password.
-                await CreateUserAsync("Admin", "admin@test.com", "Admin.123", adminRole.Id);
+                await CreateUserAsync("Admin", "admin@test.com", "" , true , "Admin.123", adminRole.Id);
 				await context.SaveChangesAsync();
 
             }
 			catch (Exception ex)
 			{
-
 				throw;
 			}
         }

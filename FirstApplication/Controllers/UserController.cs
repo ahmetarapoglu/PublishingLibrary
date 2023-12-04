@@ -51,13 +51,13 @@ namespace BookShop.Controllers
 
                 //Search.
                 if (!string.IsNullOrEmpty(model.Search))
-                    filter = filter.And(i => i.UserName.Contains(model.Search));
+                    filter = filter.And(i => i.UserName!.Contains(model.Search));
 
                 //Sort.
                 Expression<Func<User, object>> Order = model.Order switch
                 {
                     "id" => i => i.Id,
-                    "userName" => i => i.UserName,
+                    "userName" => i => i.UserName!,
                     _ => i => i.Id,
                 };
 
@@ -71,11 +71,11 @@ namespace BookShop.Controllers
                 static IQueryable<UserRModel> select(IQueryable<User> query) => query.Select(entity => new UserRModel
                 {
                     Id = entity.Id,
-                    Email = entity.Email,
-                    UserName = entity.UserName,
-                    RoleName = entity.UserRoles.Select(i=>i.Role.Name).ToList(),
-                    IsActive = entity.IsActive,
-                    Image = entity.Image,
+                    Email = entity.Email!,
+                    UserName = entity.UserName!,
+                    RoleName = entity.UserRoles.Select(i=>i.Role.Name).ToList()!,
+                    IsActive = entity.IsActive!,
+                    Image = entity.Image!,
                     CreateDate = entity.CreateDate,
                 });
 
@@ -107,11 +107,11 @@ namespace BookShop.Controllers
                 static IQueryable<UserRModel> select(IQueryable<User> query) => query.Select(entity => new UserRModel
                 {
                     Id = entity.Id,
-                    Email = entity.Email,
-                    UserName = entity.UserName,
-                    RoleName = entity.UserRoles.Select(i => i.Role.Name).ToList(),
+                    Email = entity.Email!,
+                    UserName = entity.UserName!,
+                    RoleName = entity.UserRoles.Select(i => i.Role.Name).ToList()!,
                     IsActive = entity.IsActive,
-                    Image = entity.Image,
+                    Image = entity.Image!,
                     CreateDate= entity.CreateDate,
                 });
 
@@ -172,10 +172,6 @@ namespace BookShop.Controllers
                 if (model.Id == 0 || model.Id == null)
                     throw new Exception("Reauested User Not Found!.");
 
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
-
                 //Where
                 Expression<Func<User, bool>> filter = i => i.Id == model.Id;
 
@@ -212,10 +208,6 @@ namespace BookShop.Controllers
             {
                 if (userId == 0 || userId == null)
                     throw new Exception("Reauested User Not Found!.");
-
-
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
 
                 //Where
                 Expression<Func<User, bool>> filter = i => i.Id == userId;
