@@ -1,14 +1,13 @@
-﻿using BookShop.Models.BookVersionModels;
+﻿using BookShop.Entities;
+using BookShop.Models.BookVersionModels;
 
 namespace BookShop.Models.BookModels
 {
     public class BookRModel :BookModel
     {
         public int Id { get; set; }
-        public string CategoryName { get; set; }
-        public int categoryId { get; set; }
         public DateTime CreateDate { get; set; }
-
+        public List<Category> Categories { get; set; }
         public List<BookVersionRModel> BookVersions { get; set; }
     }
 

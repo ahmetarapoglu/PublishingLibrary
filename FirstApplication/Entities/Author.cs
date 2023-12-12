@@ -1,5 +1,6 @@
 ﻿using BookShop.Services;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace BookShop.Entities
 {
@@ -14,7 +15,12 @@ namespace BookShop.Entities
         public List<BookAuthor> BookAuthors { get; set; }
 
         public List<AuthorPayment> AuthorPayments { get; set; }
-
-
+    }
+    public class AuthorConfig : IEntityTypeConfiguration<Author>
+    {
+        public void Configure(EntityTypeBuilder<Author> builder)
+        {
+            builder.ToTable("Authors");
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace BookShop.Db
 
         public DbSet<Author> Authors { get; set; }
         public DbSet<AuthorAddress> AuthorAddresss { get; set; }
-        public DbSet<AuthorBiography> AuthorBiyografis { get; set; }
+        public DbSet<AuthorBiography> AuthorBiyografies { get; set; }
         public DbSet<AuthorPayment> AuthorPayments { get; set; }
 
         public DbSet<Category> Categories { get; set; }
@@ -30,7 +30,6 @@ namespace BookShop.Db
         public AppDbContext(DbContextOptions options) : base(options)
         {
         }
-
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -55,79 +54,14 @@ namespace BookShop.Db
             modelBuilder.ApplyConfiguration(new RoleConfig());
             modelBuilder.ApplyConfiguration(new InvoiceConfig());
             modelBuilder.ApplyConfiguration(new OrderConfig());
-
-            //------------------------//
-            //One To One RelationShip :
-            //------------------------//
-
-            modelBuilder.Entity<Author>()
-                .HasOne<AuthorAddress>(s => s.AuthorAddress)
-                .WithOne(ad => ad.Author)
-                .HasForeignKey<AuthorAddress>(ad => ad.AuthorId);
-
-            modelBuilder.Entity<Author>()
-                .HasOne<AuthorBiography>(s => s.AuthorBiography)
-                .WithOne(ad => ad.Author)
-                .HasForeignKey<AuthorBiography>(ad => ad.AuthorId);
-
-            //------------------------//
-            //One To Many RelationShip :
-            //------------------------//
-
-            // Author - AuthorPayment
-            modelBuilder.Entity<AuthorPayment>()
-                .HasOne(s => s.Author)
-                .WithMany(g => g.AuthorPayments)
-                .HasForeignKey(s => s.AuthorId);
-
-            // Category - Book
-            modelBuilder.Entity<Book>()
-                .HasOne(s => s.Category)
-                .WithMany(g => g.Books)
-                .HasForeignKey(s => s.CategoryId);
-
-            // Book - BookVersion
-            modelBuilder.Entity<BookVersion>()
-                .HasOne(s => s.Book)
-                .WithMany(g => g.BookVersions)
-                .HasForeignKey(s => s.BookId);
-
-            // Branch - BranchPayment
-            modelBuilder.Entity<BranchPayment>()
-                .HasOne(s => s.Branch)
-                .WithMany(g => g.BranchPayments)
-                .HasForeignKey(s => s.BranchId);
-
-            //------------------------//
-            //Many To Many RelationShip :
-            //------------------------//
-
-            // Book - Author
-            modelBuilder.Entity<BookAuthor>()
-                .HasOne(s => s.Book)
-                .WithMany(g => g.BookAuthors)
-                .HasForeignKey(s => s.BookId);
-
-            modelBuilder.Entity<BookAuthor>()
-                .HasOne(s => s.Author)
-                .WithMany(g => g.BookAuthors)
-                .HasForeignKey(s => s.AuthorId);
-
-            // BookVersion - Branch
-            modelBuilder.Entity<Order>()
-                .HasOne(s => s.BookVersion)
-                .WithMany(g => g.Orders)
-                .HasForeignKey(s => s.BookVersionId);
-
-            modelBuilder.Entity<Order>()
-                .HasOne(s => s.Branch)
-                .WithMany(g => g.Orders)
-                .HasForeignKey(s => s.BranchId);
-
-
-            modelBuilder.Entity<BookAuthor>().HasKey(sc => new { sc.AuthorId, sc.BookId });
-            modelBuilder.Entity<Order>().HasKey(sc => new { sc.Id });
-
+            modelBuilder.ApplyConfiguration(new AuthorConfig());
+            modelBuilder.ApplyConfiguration(new AuthorAddressConfig());
+            modelBuilder.ApplyConfiguration(new AuthorBiographyConfig());
+            modelBuilder.ApplyConfiguration(new AuthorPaymentConfig());
+            modelBuilder.ApplyConfiguration(new BookConfig());
+            modelBuilder.ApplyConfiguration(new CategoryConfig());
+            modelBuilder.ApplyConfiguration(new BookVersionConfig());
+            modelBuilder.ApplyConfiguration(new BranchPaymentConfig());
         }
 
     }

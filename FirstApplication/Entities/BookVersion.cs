@@ -1,4 +1,6 @@
 ﻿using BookShop.Services;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.Entities
 {
@@ -15,5 +17,20 @@ namespace BookShop.Entities
 
         public List<Order> Orders { get; set; }
 
+    }
+    public class BookVersionConfig : IEntityTypeConfiguration<BookVersion>
+    {
+        public void Configure(EntityTypeBuilder<BookVersion> builder)
+        {
+
+            //------------------------//
+            // One To Many RelationShip :
+            //------------------------//
+
+            // Book - BookVersion
+             builder.HasOne(s => s.Book)
+                    .WithMany(g => g.BookVersions)
+                    .HasForeignKey(s => s.BookId);
+        }
     }
 }

@@ -65,8 +65,8 @@ namespace BookShop.Controllers
                     Description = entity.Description,
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
-                    CategoryName = entity.Category.CategoryName,
-                    categoryId = entity.CategoryId,
+                    CreateDate = entity.CreateDate,
+                    //Categories = entity.Categories,
                     BookAuthors = entity.BookAuthors.Select(i => new AuthorInBookModel
                     {
                         AuthorId = i.AuthorId,
@@ -119,8 +119,8 @@ namespace BookShop.Controllers
                     Description = entity.Description,
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
-                    CategoryName = entity.Category.CategoryName,
-                    categoryId = entity.CategoryId,
+                    CreateDate = entity.CreateDate,
+                    //Categories = entity.Categories,
                     BookAuthors = entity.BookAuthors.Select(i => new AuthorInBookModel
                     {
                         AuthorId = i.AuthorId,
@@ -168,8 +168,11 @@ namespace BookShop.Controllers
                     Description = model.Description,
                     PublishedDate = model.PublishedDate,
                     Cover = model.Cover,
-                    CategoryId = model.CategoryId,
                     CreateDate = DateTime.Now,
+                    //Categories = model.CategoriesId.Select(i => new Category
+                    //{
+                    //    Id = i
+                    //}).ToList(),
                     BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                     {
                         AuthorId = i.AuthorId,
@@ -210,7 +213,10 @@ namespace BookShop.Controllers
                 entity.Description = model.Description;
                 entity.PublishedDate = model.PublishedDate;
                 entity.Cover = model.Cover;
-                entity.CategoryId = model.CategoryId;
+                //entity.Categories = model.CategoriesId.Select(i => new Category
+                //{
+                //    Id = i
+                //}).ToList();
                 entity.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                 {
                     AuthorId = i.AuthorId,

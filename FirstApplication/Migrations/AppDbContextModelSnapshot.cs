@@ -44,7 +44,7 @@ namespace BookShop.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Authors");
+                    b.ToTable("Authors", (string)null);
                 });
 
             modelBuilder.Entity("BookShop.Entities.AuthorAddress", b =>
@@ -110,7 +110,7 @@ namespace BookShop.Migrations
                     b.HasIndex("AuthorId")
                         .IsUnique();
 
-                    b.ToTable("AuthorBiyografis");
+                    b.ToTable("AuthorBiyografies");
                 });
 
             modelBuilder.Entity("BookShop.Entities.AuthorPayment", b =>
@@ -148,9 +148,6 @@ namespace BookShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Cover")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -171,26 +168,29 @@ namespace BookShop.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
                 });
 
             modelBuilder.Entity("BookShop.Entities.BookAuthor", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuhorRatio")
+                        .HasColumnType("int");
+
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
 
                     b.Property<int>("BookId")
                         .HasColumnType("int");
 
-                    b.Property<int>("AuhorRatio")
-                        .HasColumnType("int");
+                    b.HasKey("Id");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.HasKey("AuthorId", "BookId");
+                    b.HasIndex("AuthorId");
 
                     b.HasIndex("BookId");
 
@@ -296,6 +296,10 @@ namespace BookShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("BookId")
+                        .IsRequired()
+                        .HasColumnType("int");
+
                     b.Property<string>("CategoryName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -304,6 +308,8 @@ namespace BookShop.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BookId");
 
                     b.ToTable("Categories");
                 });
@@ -327,7 +333,7 @@ namespace BookShop.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoice", (string)null);
                 });
 
             modelBuilder.Entity("BookShop.Entities.Order", b =>
@@ -361,7 +367,7 @@ namespace BookShop.Migrations
 
                     b.HasIndex("BranchId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Order", (string)null);
                 });
 
             modelBuilder.Entity("BookShop.Entities.Role", b =>
@@ -622,17 +628,6 @@ namespace BookShop.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("BookShop.Entities.Book", b =>
-                {
-                    b.HasOne("BookShop.Entities.Category", "Category")
-                        .WithMany("Books")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("BookShop.Entities.BookAuthor", b =>
                 {
                     b.HasOne("BookShop.Entities.Author", "Author")
@@ -672,6 +667,17 @@ namespace BookShop.Migrations
                         .IsRequired();
 
                     b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("BookShop.Entities.Category", b =>
+                {
+                    b.HasOne("BookShop.Entities.Book", "Book")
+                        .WithMany("Categories")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
                 });
 
             modelBuilder.Entity("BookShop.Entities.Invoice", b =>
@@ -777,6 +783,8 @@ namespace BookShop.Migrations
                     b.Navigation("BookAuthors");
 
                     b.Navigation("BookVersions");
+
+                    b.Navigation("Categories");
                 });
 
             modelBuilder.Entity("BookShop.Entities.BookVersion", b =>
@@ -789,11 +797,6 @@ namespace BookShop.Migrations
                     b.Navigation("BranchPayments");
 
                     b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("BookShop.Entities.Category", b =>
-                {
-                    b.Navigation("Books");
                 });
 
             modelBuilder.Entity("BookShop.Entities.Order", b =>

@@ -13,13 +13,14 @@ namespace BookShop.Entities
         {
             public void Configure(EntityTypeBuilder<Invoice> builder)
             {
+                builder.ToTable("Invoice");
 
                 //------------------------//
                 //One To One RelationShip :
                 //------------------------//
 
                 //Order - Invoice.
-                builder.HasOne<Order>(i => i.Order)
+                builder.HasOne(i => i.Order)
                         .WithOne(o => o.Invoice)
                         .HasForeignKey<Invoice>(i => i.OrderId);
             }

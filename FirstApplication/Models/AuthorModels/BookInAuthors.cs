@@ -9,7 +9,7 @@ namespace BookShop.Models.AuthorModels
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime PublishedDate { get; set; }
-        public string CategoryName { get; set; }
+        public List<string> CategoryName { get; set; }
         public List<BookVersionRModel> BookVersions { get; set; }
     }
 }

@@ -73,6 +73,7 @@ namespace BookShop.Controllers
                         Id = entity.Id,
                         NameSurname = entity.NameSurname,
                         Image = entity.Image,
+                        CreateDate = entity.CreateDate,
                         TotalAmount = entity.AuthorPayments.Sum(i => i.Amount),
                         TotalPayment = entity.AuthorPayments.Sum(i => i.Amount),
                         RemainingPayment = entity.AuthorPayments.Sum(i => i.Amount) - entity.AuthorPayments.Sum(i => i.Amount),
@@ -95,7 +96,7 @@ namespace BookShop.Controllers
                             Title = i.Book.Title,
                             Description = i.Book.Description,
                             PublishedDate = i.Book.PublishedDate,
-                            CategoryName = i.Book.Category.CategoryName,
+                            //CategoryName = i.Book.Categories.Select(i=>i.CategoryName).ToList(),
                             BookVersions = i.Book.BookVersions.Select(i =>
                             new BookVersionRModel
                             {
@@ -141,6 +142,7 @@ namespace BookShop.Controllers
                     Id = entity.Id,
                     NameSurname = entity.NameSurname,
                     Image = entity.Image,
+                    CreateDate = entity.CreateDate,
                     TotalAmount = entity.AuthorPayments.Sum(i => i.Amount),
                     TotalPayment = entity.AuthorPayments.Sum(i => i.Amount),
                     RemainingPayment = entity.AuthorPayments.Sum(i => i.Amount) - entity.AuthorPayments.Sum(i => i.Amount),
@@ -163,7 +165,7 @@ namespace BookShop.Controllers
                         Title = i.Book.Title,
                         Description = i.Book.Description,
                         PublishedDate = i.Book.PublishedDate,
-                        CategoryName = i.Book.Category.CategoryName,
+                        //CategoryName = i.Book.Categories.Select(i => i.CategoryName).ToList(),
                         BookVersions = i.Book.BookVersions.Select(i =>
                         new BookVersionRModel
                         {

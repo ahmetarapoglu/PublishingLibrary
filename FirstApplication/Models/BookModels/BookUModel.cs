@@ -3,6 +3,6 @@
     public class BookUModel : BookModel
     {
         public int Id { get; set; }
-        public int CategoryId { get; set; }
+        public List<int> CategoriesId { get; set; }
     }
 }

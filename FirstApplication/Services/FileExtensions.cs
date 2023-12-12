@@ -1,9 +1,6 @@
 ﻿using BookShop.Enum;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using SixLabors.ImageSharp.Formats.Webp;
-using System.IO;
 
 namespace BookShop.Services
 {
@@ -11,10 +8,10 @@ namespace BookShop.Services
     {
 
         public async static Task<string> SharpSaveFile(
-            string sourcePath ,
+            string sourcePath,
             string targetPath,
-            string sourceFileName ,
-            EnumFileExtension extension = EnumFileExtension.Webp) 
+            string sourceFileName,
+            EnumFileExtension extension = EnumFileExtension.Webp)
         {
             try
             {
@@ -40,26 +37,27 @@ namespace BookShop.Services
 
                 image.Dispose();
                 string path = sourcePath + sourceFileName;
-                if(File.Exists(path)) File.Delete(path);
+                if (File.Exists(path)) File.Delete(path);
 
                 return targetFileName;
-            }catch (Exception ex) { 
+            }
+            catch (Exception ex)
+            {
                 throw new Exception(ex.Message);
             }
         }
 
 
-
-        public async static Task<string?> SharpUploadFile (
+        public async static Task<string?> SharpUploadFile(
             this IFormFile formFile,
             string path,
             EnumFileExtension extension = EnumFileExtension.Webp)
         {
             try
             {
-                if(formFile == null || formFile.Length == 0) return null;
+                if (formFile == null || formFile.Length == 0) return null;
 
-                var extensionFile = Path.GetExtension (formFile.FileName);
+                var extensionFile = Path.GetExtension(formFile.FileName);
 
                 string fileName = DateTime.Now.Ticks.ToString();
 
@@ -90,12 +88,12 @@ namespace BookShop.Services
                 }
 
                 return fileName;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
         }
-
 
 
         public static async Task<string> UploadFileBase64(
@@ -110,7 +108,7 @@ namespace BookShop.Services
                 if (!fileBase64.Contains(";base64"))
                     throw new OzelException(ErrorProvider.NotValid);
 
-                var s = Math.Max(fileBase64.IndexOf(":"),0) + 1;
+                var s = Math.Max(fileBase64.IndexOf(":"), 0) + 1;
 
                 var contentType = fileBase64[s..fileBase64.IndexOf(";base64")];
                 MimeTypes.TryGetExtension(contentType, out string ext);
@@ -126,8 +124,8 @@ namespace BookShop.Services
                 var bytes = Convert.FromBase64String(fileBase64);
                 File.WriteAllBytes(tempPath + fileName, bytes);
 
-                if(contentType.Contains("image"))
-                    return await SharpSaveFile(tempPath ,path, fileName, extension);
+                if (contentType.Contains("image"))
+                    return await SharpSaveFile(tempPath, path, fileName, extension);
 
                 return fileName;
 
@@ -137,7 +135,6 @@ namespace BookShop.Services
                 throw new Exception(ex.Message);
             }
         }
-
 
 
         public static async Task<SixLabors.ImageSharp.Image> SharpResizeImageAsync(
@@ -167,8 +164,7 @@ namespace BookShop.Services
         }
 
 
-
-        public static bool Delete(string folderName , string fileName)
+        public static bool Delete(string folderName, string fileName)
         {
             try
             {
@@ -184,8 +180,9 @@ namespace BookShop.Services
 
                 return result;
             }
-            catch { 
-              return false;
+            catch
+            {
+                return false;
             }
         }
 
@@ -195,7 +192,8 @@ namespace BookShop.Services
                 Directory.CreateDirectory(pathName);
         }
 
-        public class Base64UploadModel { 
+        public class Base64UploadModel
+        {
             public string fileBase64 { get; set; }
             public int thumbSize { get; set; }
             public List<int> imageSize { get; set; }

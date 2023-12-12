@@ -79,7 +79,6 @@ namespace BookShop.Controllers
                         SellPrice = entity.SellPrice,
                         TotalSellPrice = entity.SellPrice * entity.BookCount,
                         LibraryRatio = entity.LibraryRatio,
-
                     });
 
                 var (total, data) = await _versionRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);

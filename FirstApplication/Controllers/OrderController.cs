@@ -75,6 +75,7 @@ namespace BookShop.Controllers
                         Number = entity.BookVersion.Number,
                         BookName = entity.BookVersion.Book.Title,
                         BookCount = entity.BookCount,
+                        CreateDate = entity.CreateDate,
                         Total = entity.BookVersion.SellPrice * entity.BookCount,
                         profitTotal = (entity.BookVersion.SellPrice - entity.BookVersion.CostPrice) * entity.BookCount,
                     });
@@ -113,6 +114,7 @@ namespace BookShop.Controllers
                     Number = entity.BookVersion.Number,
                     BookName = entity.BookVersion.Book.Title,
                     BookCount = entity.BookCount,
+                    CreateDate = entity.CreateDate,
                     Total = entity.BookVersion.SellPrice * entity.BookCount,
                     profitTotal = (entity.BookVersion.SellPrice - entity.BookVersion.CostPrice) * entity.BookCount,
 

@@ -64,6 +64,7 @@ namespace BookShop.Controllers
                 {
                     Id = entity.Id,
                     BranchAddress = entity.BranchAddress,
+                    CreateDate = entity.CreateDate,
                     BranchName = entity.BranchName,
                     PhoneNumber = entity.PhoneNumber,
                     TotalAmount = entity.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),
@@ -108,6 +109,7 @@ namespace BookShop.Controllers
                 {
                     Id = entity.Id,
                     BranchAddress = entity.BranchAddress,
+                    CreateDate = entity.CreateDate,
                     BranchName = entity.BranchName,
                     PhoneNumber = entity.PhoneNumber,
                     TotalAmount = entity.Orders.Sum(i => ((i.BookVersion.SellPrice - i.BookVersion.CostPrice) * i.BookCount)),

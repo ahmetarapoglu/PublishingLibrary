@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "Vn3jNFfNllLOnfM7OsEw5XrDZd19qSJZyOuiGptAf9Y=",
+  "Hash": "fjTdWlQXQ0+1Sm97SRItkmGImov0+S4KiWVABg8domw=",
   "Source": "BookShop",
   "BasePath": "_content/BookShop",
   "Mode": "Default",
@@ -1214,6 +1214,25 @@
       "OriginalItemSpec": "wwwroot\\Upload\\Files\\638373265019013566.Webp"
     },
     {
+      "Identity": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638373270639514530.Webp",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "Upload/Files/638373270639514530.Webp",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Upload\\Files\\638373270639514530.Webp"
+    },
+    {
       "Identity": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\[_638373263488846933.Webp",
       "SourceId": "BookShop",
       "SourceType": "Discovered",
@@ -1328,6 +1347,25 @@
       "OriginalItemSpec": "wwwroot\\Upload\\Files\\resize\\150_638373265019013566.Webp"
     },
     {
+      "Identity": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\150_638373270639514530.Webp",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "Upload/Files/resize/150_638373270639514530.Webp",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Upload\\Files\\resize\\150_638373270639514530.Webp"
+    },
+    {
       "Identity": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638373260945399609.Webp",
       "SourceId": "BookShop",
       "SourceType": "Discovered",
@@ -1383,6 +1421,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\Upload\\Files\\thumb\\638373265019013566.Webp"
+    },
+    {
+      "Identity": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638373270639514530.Webp",
+      "SourceId": "BookShop",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\",
+      "BasePath": "_content/BookShop",
+      "RelativePath": "Upload/Files/thumb/638373270639514530.Webp",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Upload\\Files\\thumb\\638373270639514530.Webp"
     }
   ]
 }

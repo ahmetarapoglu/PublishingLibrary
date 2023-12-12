@@ -12,7 +12,6 @@ namespace BookShop.Entities
     {
         public void Configure(EntityTypeBuilder<Role> builder)
         {
-
         }
     }
 }
