@@ -7,6 +7,8 @@ using BookShop.Services;
 using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace BookShop.Controllers
@@ -66,7 +68,11 @@ namespace BookShop.Controllers
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
                     CreateDate = entity.CreateDate,
-                    //Categories = entity.Categories,
+                    Categories = entity.BookCategories.Select(i=> new BookCategoryModel
+                    {
+                        Id = i.Category.Id,
+                        CategoryName = i.Category.CategoryName
+                    }).ToList(),
                     BookAuthors = entity.BookAuthors.Select(i => new AuthorInBookModel
                     {
                         AuthorId = i.AuthorId,
@@ -120,7 +126,11 @@ namespace BookShop.Controllers
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
                     CreateDate = entity.CreateDate,
-                    //Categories = entity.Categories,
+                    Categories = entity.BookCategories.Select(i => new BookCategoryModel
+                    {
+                        Id = i.Category.Id,
+                        CategoryName = i.Category.CategoryName
+                    }).ToList(),
                     BookAuthors = entity.BookAuthors.Select(i => new AuthorInBookModel
                     {
                         AuthorId = i.AuthorId,
@@ -168,11 +178,11 @@ namespace BookShop.Controllers
                     Description = model.Description,
                     PublishedDate = model.PublishedDate,
                     Cover = model.Cover,
+                    BookCategories = model.CategoriesId.Select(i=> new BookCategory
+                    {
+                        CategoryId = i
+                    }).ToList(),
                     CreateDate = DateTime.Now,
-                    //Categories = model.CategoriesId.Select(i => new Category
-                    //{
-                    //    Id = i
-                    //}).ToList(),
                     BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                     {
                         AuthorId = i.AuthorId,
@@ -207,21 +217,29 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<Book, bool>> filter = i => i.Id == model.Id;
 
-                var entity = await _bookRepository.FindAsync(filter);
+                //Include.
+                static IIncludableQueryable<Book, object> include(IQueryable<Book> query) => query
+                    .Include(i => i.BookAuthors)
+                    .Include(i=> i.BookCategories)
+                    .Include(i=> i.BookVersions);
 
-                entity!.Title = model.Title;
+                var entity = await _bookRepository.FindAsync(filter, include);
+
+                entity.Title = model.Title;
                 entity.Description = model.Description;
                 entity.PublishedDate = model.PublishedDate;
                 entity.Cover = model.Cover;
-                //entity.Categories = model.CategoriesId.Select(i => new Category
-                //{
-                //    Id = i
-                //}).ToList();
+                entity.BookCategories = model.CategoriesId.Select(i=> new BookCategory 
+                {
+                    CategoryId = i
+                }).ToList();
                 entity.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
                 {
                     AuthorId = i.AuthorId,
                     AuhorRatio = i.AuhorRatio,
                 }).ToList();
+
+                await _bookRepository.UpdateAsync(entity);
 
                 return Ok();
             }

@@ -1,8 +1,4 @@
-﻿using BookShop.Entities;
-using System.ComponentModel.DataAnnotations;
-using Xunit.Abstractions;
-
-namespace BookShop.Models.BookModels
+﻿namespace BookShop.Models.BookModels
 {
     public class BookCModel : BookModel
     {

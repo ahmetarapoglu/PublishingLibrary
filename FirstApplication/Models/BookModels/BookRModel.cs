@@ -7,7 +7,7 @@ namespace BookShop.Models.BookModels
     {
         public int Id { get; set; }
         public DateTime CreateDate { get; set; }
-        public List<Category> Categories { get; set; }
+        public List<BookCategoryModel> Categories { get; set; }
         public List<BookVersionRModel> BookVersions { get; set; }
     }
 

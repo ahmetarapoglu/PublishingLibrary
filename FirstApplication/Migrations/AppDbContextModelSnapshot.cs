@@ -173,28 +173,41 @@ namespace BookShop.Migrations
 
             modelBuilder.Entity("BookShop.Entities.BookAuthor", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AuhorRatio")
-                        .HasColumnType("int");
-
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
 
                     b.Property<int>("BookId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("AuhorRatio")
+                        .HasColumnType("int");
 
-                    b.HasIndex("AuthorId");
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("AuthorId", "BookId");
 
                     b.HasIndex("BookId");
 
                     b.ToTable("BookAuthors");
+                });
+
+            modelBuilder.Entity("BookShop.Entities.BookCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId", "BookId");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookCategory");
                 });
 
             modelBuilder.Entity("BookShop.Entities.BookVersion", b =>
@@ -296,10 +309,6 @@ namespace BookShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BookId")
-                        .IsRequired()
-                        .HasColumnType("int");
-
                     b.Property<string>("CategoryName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -308,8 +317,6 @@ namespace BookShop.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BookId");
 
                     b.ToTable("Categories");
                 });
@@ -647,6 +654,25 @@ namespace BookShop.Migrations
                     b.Navigation("Book");
                 });
 
+            modelBuilder.Entity("BookShop.Entities.BookCategory", b =>
+                {
+                    b.HasOne("BookShop.Entities.Book", "Book")
+                        .WithMany("BookCategories")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BookShop.Entities.Category", "Category")
+                        .WithMany("BookCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("BookShop.Entities.BookVersion", b =>
                 {
                     b.HasOne("BookShop.Entities.Book", "Book")
@@ -667,17 +693,6 @@ namespace BookShop.Migrations
                         .IsRequired();
 
                     b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("BookShop.Entities.Category", b =>
-                {
-                    b.HasOne("BookShop.Entities.Book", "Book")
-                        .WithMany("Categories")
-                        .HasForeignKey("BookId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Book");
                 });
 
             modelBuilder.Entity("BookShop.Entities.Invoice", b =>
@@ -782,9 +797,9 @@ namespace BookShop.Migrations
                 {
                     b.Navigation("BookAuthors");
 
-                    b.Navigation("BookVersions");
+                    b.Navigation("BookCategories");
 
-                    b.Navigation("Categories");
+                    b.Navigation("BookVersions");
                 });
 
             modelBuilder.Entity("BookShop.Entities.BookVersion", b =>
@@ -797,6 +812,11 @@ namespace BookShop.Migrations
                     b.Navigation("BranchPayments");
 
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("BookShop.Entities.Category", b =>
+                {
+                    b.Navigation("BookCategories");
                 });
 
             modelBuilder.Entity("BookShop.Entities.Order", b =>

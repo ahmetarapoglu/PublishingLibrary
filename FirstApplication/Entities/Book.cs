@@ -11,10 +11,9 @@ namespace BookShop.Entities
         public DateTime PublishedDate { get; set; }
         public string Cover { get; set; }
 
-        public List<Category> Categories { get; set; }
 
+        public List<BookCategory> BookCategories { get; set; }
         public List<BookAuthor> BookAuthors { get; set;}
-
         public List<BookVersion> BookVersions { get; set;}
     }
     public class BookConfig : IEntityTypeConfiguration<Book>
