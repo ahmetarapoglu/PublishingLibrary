@@ -230,16 +230,16 @@ namespace BookShop.Controllers
                     book.PublishedDate = model.PublishedDate;
                     book.Cover = model.Cover;
 
-                    book.BookCategories = model.CategoriesId.Select(i => new BookCategory
+                    book.BookCategories = model.CategoriesId.Select(i=>new BookCategory
                     {
                         CategoryId = i
                     }).ToList();
 
-                    book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
-                    {
-                        AuthorId = i.AuthorId,
-                        AuhorRatio = i.AuhorRatio,
-                    }).ToList();
+                    //book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
+                    //{
+                    //    AuthorId = i.AuthorId,
+                    //    AuhorRatio = i.AuhorRatio,
+                    //}).ToList();
                 }
 
                 await _bookRepository.UpdateAsync(action, filter, include);
