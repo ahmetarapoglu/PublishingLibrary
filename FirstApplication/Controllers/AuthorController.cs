@@ -96,7 +96,7 @@ namespace BookShop.Controllers
                             Title = i.Book.Title,
                             Description = i.Book.Description,
                             PublishedDate = i.Book.PublishedDate,
-                            //CategoryName = i.Book.Categories.Select(i=>i.CategoryName).ToList(),
+                            CategoryName = i.Book.BookCategories.Select(i=>i.Category.CategoryName).ToList(),
                             BookVersions = i.Book.BookVersions.Select(i =>
                             new BookVersionRModel
                             {
@@ -165,7 +165,7 @@ namespace BookShop.Controllers
                         Title = i.Book.Title,
                         Description = i.Book.Description,
                         PublishedDate = i.Book.PublishedDate,
-                        //CategoryName = i.Book.Categories.Select(i => i.CategoryName).ToList(),
+                        CategoryName = i.Book.BookCategories.Select(i => i.Category.CategoryName).ToList(),
                         BookVersions = i.Book.BookVersions.Select(i =>
                         new BookVersionRModel
                         {
@@ -249,27 +249,28 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<Author, bool>> filter = i => i.Id == model.Id;
 
-                var entity = await _authorRepository.FindAsync(filter);
-
-
-                entity!.NameSurname = model.NameSurname;
-                entity.Image = model.Image;
-                entity.AuthorAddress = new AuthorAddress
+                void action(Author user)
                 {
-                    Country = model.AuthorAddress.Country,
-                    City = model.AuthorAddress.City,
-                    PostCode = model.AuthorAddress.PostCode,
-                    
-                };
-                entity.AuthorBiography = new AuthorBiography
-                {
-                    Email = model.AuthorBiography.Email,
-                    PhoneNumber = model.AuthorBiography.PhoneNumber,
-                    NativeLanguage = model.AuthorBiography.NativeLanguage,
-                    Education = model.AuthorBiography.Education
-                };
+                    user!.NameSurname = model.NameSurname;
+                    user.Image = model.Image;
 
-                await _authorRepository.UpdateAsync(entity);
+                    user.AuthorAddress.Country = model.AuthorAddress.Country;
+                    user.AuthorAddress.City = model.AuthorAddress.City;
+                    user.AuthorAddress.PostCode = model.AuthorAddress.PostCode;
+
+                    user.AuthorBiography.Email = model.AuthorBiography.Email;
+                    user.AuthorBiography.PhoneNumber = model.AuthorBiography.PhoneNumber;
+                    user.AuthorBiography.NativeLanguage = model.AuthorBiography.NativeLanguage;
+                    user.AuthorBiography.Education = model.AuthorBiography.Education;
+                }
+
+                //Include.
+                static IIncludableQueryable<Author, object> include(IQueryable<Author> query) => query
+                    .Include(i => i.AuthorAddress)
+                    .Include(i => i.AuthorBiography);
+ 
+
+                await _authorRepository.UpdateAsync(action, filter, include);
 
                 return Ok();
             }

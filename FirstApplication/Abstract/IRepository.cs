@@ -48,7 +48,7 @@ namespace BookShop.Abstract
         Task AddRangeAsync(List<TEntity> entities);
 
 
-        Task UpdateAsync(TEntity entity);
+        Task UpdateAsync(Action<TEntity> action, Expression<Func<TEntity, bool>> filter, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null);
         Task UpdateRangeAsync(List<TEntity> entities);
 
 

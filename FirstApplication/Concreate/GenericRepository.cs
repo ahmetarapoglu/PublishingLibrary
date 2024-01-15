@@ -3,6 +3,7 @@ using BookShop.Db;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BookShop.Concreate
 {
@@ -265,9 +266,23 @@ namespace BookShop.Concreate
         #endregion
 
         #region Update
-        public async Task UpdateAsync(TEntity entity)
+        public async Task UpdateAsync(
+            Action<TEntity> action,
+            Expression<Func<TEntity, bool>> filter,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null)
         {
-            _dbSet.Update(entity);
+            IQueryable<TEntity> query = _context.Set<TEntity>().Where(filter).AsNoTracking().AsQueryable();
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            var entity = await query.FirstOrDefaultAsync();
+
+            action(entity!);
+
+            _dbSet.Update(entity!);
             await _context.SaveChangesAsync();
         }
 

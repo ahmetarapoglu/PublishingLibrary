@@ -68,7 +68,7 @@ namespace BookShop.Controllers
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
                     CreateDate = entity.CreateDate,
-                    Categories = entity.BookCategories.Select(i=> new BookCategoryModel
+                    Categories = entity.BookCategories.Select(i => new BookCategoryModel
                     {
                         Id = i.Category.Id,
                         CategoryName = i.Category.CategoryName
@@ -178,7 +178,7 @@ namespace BookShop.Controllers
                     Description = model.Description,
                     PublishedDate = model.PublishedDate,
                     Cover = model.Cover,
-                    BookCategories = model.CategoriesId.Select(i=> new BookCategory
+                    BookCategories = model.CategoriesId.Select(i => new BookCategory
                     {
                         CategoryId = i
                     }).ToList(),
@@ -211,7 +211,7 @@ namespace BookShop.Controllers
 
             try
             {
-                if (model.Id < 0 || model.Id == null)
+                if (model.Id < 0 || model?.Id == null)
                     throw new Exception("Reauested Book Not Found!.");
 
                 //Where
@@ -220,26 +220,29 @@ namespace BookShop.Controllers
                 //Include.
                 static IIncludableQueryable<Book, object> include(IQueryable<Book> query) => query
                     .Include(i => i.BookAuthors)
-                    .Include(i=> i.BookCategories)
-                    .Include(i=> i.BookVersions);
+                    .Include(i => i.BookCategories)
+                    .Include(i => i.BookVersions);
 
-                var entity = await _bookRepository.FindAsync(filter, include);
-
-                entity.Title = model.Title;
-                entity.Description = model.Description;
-                entity.PublishedDate = model.PublishedDate;
-                entity.Cover = model.Cover;
-                entity.BookCategories = model.CategoriesId.Select(i=> new BookCategory 
+                void action(Book book)
                 {
-                    CategoryId = i
-                }).ToList();
-                entity.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
-                {
-                    AuthorId = i.AuthorId,
-                    AuhorRatio = i.AuhorRatio,
-                }).ToList();
+                    book!.Title = model.Title;
+                    book.Description = model.Description;
+                    book.PublishedDate = model.PublishedDate;
+                    book.Cover = model.Cover;
 
-                await _bookRepository.UpdateAsync(entity);
+                    book.BookCategories = model.CategoriesId.Select(i => new BookCategory
+                    {
+                        CategoryId = i
+                    }).ToList();
+
+                    book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
+                    {
+                        AuthorId = i.AuthorId,
+                        AuhorRatio = i.AuhorRatio,
+                    }).ToList();
+                }
+
+                await _bookRepository.UpdateAsync(action, filter, include);
 
                 return Ok();
             }

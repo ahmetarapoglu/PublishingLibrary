@@ -150,17 +150,18 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (model.Id == 0 || model.Id == null)
+                if (model.Id == 0 || model?.Id == null)
                     throw new Exception("Reauested Category Not Found!.");
 
                 //Where
                 Expression<Func<Category, bool>> filter = i => i.Id == model.Id;
 
-                var entity = await _categoryrepository.FindAsync(filter);
+                void action(Category user)
+                {
+                    user!.CategoryName = model.CategoryName;
+                }
 
-                entity!.CategoryName = model.CategoryName;
-
-                await _categoryrepository.UpdateAsync(entity);
+                await _categoryrepository.UpdateAsync(action, filter);
 
                 return Ok();
             }

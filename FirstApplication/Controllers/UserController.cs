@@ -175,18 +175,19 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<User, bool>> filter = i => i.Id == model.Id;
 
-                var entity = await _userRepository.FindAsync(filter);
-
-                entity!.UserName = model.UserName;
-                entity.Email = model.Email;
-                entity.IsActive = model.IsActive;
-                entity.Image = model.Image;
-                entity.UserRoles = model.UserRoles.Select(i => new UserRole
+                void action(User entity)
                 {
-                    RoleId = i
-                }).ToList();    
-
-                await _userRepository.UpdateAsync(entity);
+                    entity!.UserName = model.UserName;
+                    entity.Email = model.Email;
+                    entity.IsActive = model.IsActive;
+                    entity.Image = model.Image;
+                    entity.UserRoles = model.UserRoles.Select(i => new UserRole
+                    {
+                        RoleId = i
+                    }).ToList();
+                }
+  
+                await _userRepository.UpdateAsync(action, filter);
 
                 return Ok();
             }
@@ -212,11 +213,12 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<User, bool>> filter = i => i.Id == userId;
 
-                var entity = await _userRepository.FindAsync(filter);
+                void action(User user)
+                {
+                    user!.IsActive = isActive;
+                }
 
-                entity!.IsActive = isActive;
-
-                await _userRepository.UpdateAsync(entity);
+                await _userRepository.UpdateAsync(action, filter);
 
                 return Ok();
             }

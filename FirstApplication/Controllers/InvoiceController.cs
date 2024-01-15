@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Org.BouncyCastle.Asn1.X509;
 using System.Linq.Expressions;
 
 namespace BookShop.Controllers
@@ -146,21 +147,19 @@ namespace BookShop.Controllers
                 //Where
                 Expression<Func<Order, bool>> filter = i => i.Id == model.OrderId;
 
-                var order = await _orderRepository.FindAsync(filter);
-
-                if (order!.IsInvoiced)
-                    throw new OzelException(ErrorProvider.NotValid);
-
-                order.BookVersionId = model.BookVersionId;
-                order.BookCount = model.BookCount;
-                order.IsInvoiced = true;
+                void action(Order order)
+                {
+                    order.BookVersionId = model.BookVersionId;
+                    order.BookCount = model.BookCount;
+                    order.IsInvoiced = true;
+                }
 
                 var entity = new Invoice
                 {
                     OrderId = model.OrderId,
                 };
 
-                await _orderRepository.UpdateAsync(order);
+                await _orderRepository.UpdateAsync(action, filter);
                 await _invoiceRepository.AddAsync(entity);
 
                 return Ok();
@@ -175,44 +174,44 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> UpdateInvoice(InvoiceUModel model)
-        {
-            try
-            {
+        //[HttpPost]
+        //[Route("[action]")]
+        //public async Task<IActionResult> UpdateInvoice(InvoiceUModel model)
+        //{
+        //    try
+        //    {
 
-                if (model.Id < 0 || model.Id == null)
-                    throw new Exception("Reauested Order Not Found!.");
+        //        if (model.Id < 0 || model.Id == null)
+        //            throw new Exception("Reauested Order Not Found!.");
 
-                //Where
-                Expression<Func<Invoice, bool>> filter = i => i.Id == model.Id;
+        //        //Where
+        //        Expression<Func<Invoice, bool>> filter = i => i.Id == model.Id;
 
-                //Include.
-                static IIncludableQueryable<Invoice, object> include(IQueryable<Invoice> query) => query.Include(i => i.Order);
+        //        //Include.
+        //        static IIncludableQueryable<Invoice, object> include(IQueryable<Invoice> query) => query.Include(i => i.Order);
 
-                var entity = await _invoiceRepository.FindAsync(filter, include);
+        //        var entity = await _invoiceRepository.FindAsync(filter, include);
 
-                if (entity!.Order.IsInvoiced)
-                {
-                    entity.Order.BookVersionId = model.BookVersionId;
-                    entity.Order.BookCount = model.BookCount;
-                    entity.Order.IsInvoiced = true;
-                }
+        //        if (entity!.Order.IsInvoiced)
+        //        {
+        //            entity.Order.BookVersionId = model.BookVersionId;
+        //            entity.Order.BookCount = model.BookCount;
+        //            entity.Order.IsInvoiced = true;
+        //        }
 
-                await _invoiceRepository.UpdateAsync(entity);
+        //        await _invoiceRepository.UpdateAsync(entity);
 
-                return Ok();
-            }
-            catch (OzelException ex)
-            {
-                return BadRequest(ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        return Ok();
+        //    }
+        //    catch (OzelException ex)
+        //    {
+        //        return BadRequest(ex.Errors);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpDelete]
         [Route("[action]")]
