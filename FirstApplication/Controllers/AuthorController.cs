@@ -57,6 +57,7 @@ namespace BookShop.Controllers
                 {
                     "id" => i => i.Id,
                     "nameSurname" => i => i.NameSurname,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 
@@ -74,9 +75,9 @@ namespace BookShop.Controllers
                         NameSurname = entity.NameSurname,
                         Image = entity.Image,
                         CreateDate = entity.CreateDate,
-                        TotalAmount = entity.AuthorPayments.Sum(i => i.Amount),
+                        TotalAmount = entity.BookAuthors.Select(i => (i.AuhorRatio * i.Book.BookVersions.Sum(i => i.ProfitTotal)) / (100)).FirstOrDefault(),                       
                         TotalPayment = entity.AuthorPayments.Sum(i => i.Amount),
-                        RemainingPayment = entity.AuthorPayments.Sum(i => i.Amount) - entity.AuthorPayments.Sum(i => i.Amount),
+                        RemainingPayment = entity.BookAuthors.Select(i => (i.AuhorRatio * i.Book.BookVersions.Sum(i => i.ProfitTotal)) / (100)).FirstOrDefault() - entity.AuthorPayments.Sum(i => i.Amount),
                         AuthorAddress = new AuthorAddressModel
                         {
                             Country = entity.AuthorAddress.Country,
@@ -96,6 +97,7 @@ namespace BookShop.Controllers
                             Title = i.Book.Title,
                             Description = i.Book.Description,
                             PublishedDate = i.Book.PublishedDate,
+                            LibraryRatio = i.Book.LibraryRatio,
                             CategoryName = i.Book.BookCategories.Select(i=>i.Category.CategoryName).ToList(),
                             BookVersions = i.Book.BookVersions.Select(i =>
                             new BookVersionRModel
@@ -107,7 +109,7 @@ namespace BookShop.Controllers
                                 TotalCostPrice = i.CostPrice * i.BookCount,
                                 SellPrice = i.SellPrice,
                                 TotalSellPrice = i.SellPrice * i.BookCount,
-                                LibraryRatio = i.LibraryRatio,
+                                ProfitTotal = i.ProfitTotal,
                             }).ToList()
                         }).ToList(),
                     });
@@ -135,6 +137,7 @@ namespace BookShop.Controllers
             {
                 //Where
                 Expression<Func<Author, bool>> filter = i => i.Id == id;
+                decimal c = 0;
 
                 //Select
                 static IQueryable<AuthorRModel> select(IQueryable<Author> query) => query.Select(entity => new AuthorRModel
@@ -143,9 +146,9 @@ namespace BookShop.Controllers
                     NameSurname = entity.NameSurname,
                     Image = entity.Image,
                     CreateDate = entity.CreateDate,
-                    TotalAmount = entity.AuthorPayments.Sum(i => i.Amount),
+                    TotalAmount = entity.BookAuthors.Select(i=> (i.AuhorRatio * i.Book.BookVersions.Sum(i => i.ProfitTotal)) /(100)).FirstOrDefault(),
                     TotalPayment = entity.AuthorPayments.Sum(i => i.Amount),
-                    RemainingPayment = entity.AuthorPayments.Sum(i => i.Amount) - entity.AuthorPayments.Sum(i => i.Amount),
+                    RemainingPayment = entity.BookAuthors.Select(i => (i.AuhorRatio * i.Book.BookVersions.Sum(i => i.ProfitTotal)) / (100)).FirstOrDefault() - entity.AuthorPayments.Sum(i => i.Amount),
                     AuthorAddress = new AuthorAddressModel
                     {
                         Country = entity.AuthorAddress.Country,
@@ -165,6 +168,7 @@ namespace BookShop.Controllers
                         Title = i.Book.Title,
                         Description = i.Book.Description,
                         PublishedDate = i.Book.PublishedDate,
+                        LibraryRatio = i.Book.LibraryRatio,
                         CategoryName = i.Book.BookCategories.Select(i => i.Category.CategoryName).ToList(),
                         BookVersions = i.Book.BookVersions.Select(i =>
                         new BookVersionRModel
@@ -176,7 +180,7 @@ namespace BookShop.Controllers
                             TotalCostPrice = i.CostPrice * i.BookCount,
                             SellPrice = i.SellPrice,
                             TotalSellPrice = i.SellPrice * i.BookCount,
-                            LibraryRatio = i.LibraryRatio,
+                            ProfitTotal = i.ProfitTotal,
                         }).ToList()
                     }).ToList()
 
@@ -242,7 +246,7 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (model.Id == 0 || model.Id == null)
+                if (model.Id == 0 || model?.Id == null)
                     throw new Exception("Reauested Author Not Found!.");
                
 

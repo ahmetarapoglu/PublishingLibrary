@@ -7,6 +7,7 @@ namespace BookShop.Entities
     public class Role : IdentityRole<int>
     {
         public List<UserRole> UserRoles { get; set; }
+        public DateTime CreateDate { get; set; }
     }
     class RoleConfig : IEntityTypeConfiguration<Role>
     {

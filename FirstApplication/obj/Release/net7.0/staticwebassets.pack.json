@@ -1,0 +1,81 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638373260945399609.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\638373260945399609.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638373263488846933.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\638373263488846933.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638373265019013566.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\638373265019013566.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\638373270639514530.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\638373270639514530.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\0_638373263488846933.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\0_638373263488846933.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\150_638373260945399609.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\150_638373260945399609.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\150_638373265019013566.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\150_638373265019013566.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\150_638373270639514530.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\150_638373270639514530.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\1_638373263488846933.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\1_638373263488846933.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\[_638373263488846933.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\[_638373263488846933.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\resize\\]_638373263488846933.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\resize\\]_638373263488846933.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638373260945399609.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638373260945399609.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638373263488846933.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638373263488846933.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638373265019013566.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638373265019013566.Webp"
+    },
+    {
+      "Id": "C:\\Users\\ihab\\Desktop\\GitHub\\PublishingLibrary_BackEnd\\FirstApplication\\wwwroot\\Upload\\Files\\thumb\\638373270639514530.Webp",
+      "PackagePath": "staticwebassets\\Upload\\Files\\thumb\\638373270639514530.Webp"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.BookShop.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.build.BookShop.props",
+      "PackagePath": "build\\BookShop.props"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.buildMultiTargeting.BookShop.props",
+      "PackagePath": "buildMultiTargeting\\BookShop.props"
+    },
+    {
+      "Id": "obj\\Release\\net7.0\\staticwebassets\\msbuild.buildTransitive.BookShop.props",
+      "PackagePath": "buildTransitive\\BookShop.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

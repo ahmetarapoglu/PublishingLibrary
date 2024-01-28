@@ -6,6 +6,6 @@
         public int Number { get; set; }
         public decimal TotalCostPrice { get; set; }
         public decimal TotalSellPrice { get; set; }
-
+        public decimal ProfitTotal { get; set; }
     }
 }

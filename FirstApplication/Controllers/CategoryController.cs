@@ -47,14 +47,12 @@ namespace BookShop.Controllers
                 if (!string.IsNullOrEmpty(model.Search))
                     filter = filter.And(i => i.CategoryName.Contains(model.Search));
 
-                //Include.
-                //static IIncludableQueryable<Category, object> include(IQueryable<Category> query) => query.Include(i => i.Books);
-
                 //Sort.
                 Expression<Func<Category, object>> Order = model.Order switch
                 {
                     "id" => i => i.Id,
                     "categoryName" => i => i.CategoryName,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 

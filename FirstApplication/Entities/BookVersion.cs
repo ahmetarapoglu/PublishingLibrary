@@ -10,13 +10,12 @@ namespace BookShop.Entities
         public int BookCount { get; set; }
         public decimal CostPrice { get; set; }
         public decimal SellPrice { get; set; }
-        public int LibraryRatio { get; set; }
+        public decimal ProfitTotal { get; set; }
 
         public int BookId { get; set; }
         public Book Book { get; set; }
 
         public List<Order> Orders { get; set; }
-
     }
     public class BookVersionConfig : IEntityTypeConfiguration<BookVersion>
     {

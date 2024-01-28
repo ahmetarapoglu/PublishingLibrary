@@ -32,6 +32,7 @@ namespace BookShop.Seed
 						role = new Role 
 						{
 							Name = roleName,
+							CreateDate = DateTime.Now,
 						};
 
                         await _roleManager.CreateAsync(role);

@@ -127,6 +127,9 @@ namespace BookShop.Migrations
                     b.Property<int>("AuthorId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("PaidDate")
                         .HasColumnType("datetime2");
 
@@ -159,6 +162,9 @@ namespace BookShop.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("LibraryRatio")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("PublishedDate")
                         .HasColumnType("datetime2");
 
@@ -182,9 +188,6 @@ namespace BookShop.Migrations
                     b.Property<int>("AuhorRatio")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.HasKey("AuthorId", "BookId");
 
                     b.HasIndex("BookId");
@@ -200,14 +203,11 @@ namespace BookShop.Migrations
                     b.Property<int>("BookId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
                     b.HasKey("CategoryId", "BookId");
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookCategory");
+                    b.ToTable("BookCategories");
                 });
 
             modelBuilder.Entity("BookShop.Entities.BookVersion", b =>
@@ -230,11 +230,11 @@ namespace BookShop.Migrations
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("LibraryRatio")
-                        .HasColumnType("int");
-
                     b.Property<int>("Number")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("ProfitTotal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SellPrice")
                         .HasColumnType("decimal(18,2)");
@@ -287,6 +287,9 @@ namespace BookShop.Migrations
 
                     b.Property<int>("BranchId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("PaidDate")
                         .HasColumnType("datetime2");
@@ -388,6 +391,9 @@ namespace BookShop.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)

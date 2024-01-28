@@ -8,22 +8,21 @@ namespace BookShop.Entities
     {
         public int OrderId { get; set; }
         public Order Order { get; set; }
-
-        public class InvoiceConfig : IEntityTypeConfiguration<Invoice>
+    }
+    public class InvoiceConfig : IEntityTypeConfiguration<Invoice>
+    {
+        public void Configure(EntityTypeBuilder<Invoice> builder)
         {
-            public void Configure(EntityTypeBuilder<Invoice> builder)
-            {
-                builder.ToTable("Invoice");
+            builder.ToTable("Invoice");
 
-                //------------------------//
-                //One To One RelationShip :
-                //------------------------//
+            //------------------------//
+            //One To One RelationShip :
+            //------------------------//
 
-                //Order - Invoice.
-                builder.HasOne(i => i.Order)
-                        .WithOne(o => o.Invoice)
-                        .HasForeignKey<Invoice>(i => i.OrderId);
-            }
+            //Order - Invoice.
+            builder.HasOne(i => i.Order)
+                    .WithOne(o => o.Invoice)
+                    .HasForeignKey<Invoice>(i => i.OrderId);
         }
     }
 }

@@ -10,6 +10,7 @@ namespace BookShop.Models.AuthorModels
         public string Description { get; set; }
         public DateTime PublishedDate { get; set; }
         public List<string> CategoryName { get; set; }
+        public int LibraryRatio { get; set; }
         public List<BookVersionRModel> BookVersions { get; set; }
     }
 }

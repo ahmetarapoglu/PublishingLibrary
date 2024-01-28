@@ -19,9 +19,17 @@ namespace BookShop.Controllers
     public class BookController : ControllerBase
     {
         private readonly IRepository<Book> _bookRepository;
-        public BookController(IRepository<Book> bookRepository)
+        private readonly IRepository<BookCategory> _bookCategoryRepository;
+        private readonly IRepository<BookAuthor> _bookAuthorRepository;
+
+        public BookController(
+            IRepository<Book> bookRepository,
+            IRepository<BookCategory> bookCategoryRepository,
+            IRepository<BookAuthor> bookAuthorRepository)
         {
             _bookRepository = bookRepository;
+            _bookCategoryRepository = bookCategoryRepository;
+            _bookAuthorRepository = bookAuthorRepository;
         }
 
 
@@ -50,6 +58,7 @@ namespace BookShop.Controllers
                 {
                     "id" => i => i.Id,
                     "title" => i => i.Title,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 
@@ -68,6 +77,7 @@ namespace BookShop.Controllers
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
                     CreateDate = entity.CreateDate,
+                    LibraryRatio = entity.LibraryRatio,
                     Categories = entity.BookCategories.Select(i => new BookCategoryModel
                     {
                         Id = i.Category.Id,
@@ -89,7 +99,7 @@ namespace BookShop.Controllers
                         TotalCostPrice = i.CostPrice * i.BookCount,
                         SellPrice = i.SellPrice,
                         TotalSellPrice = i.SellPrice * i.BookCount,
-                        LibraryRatio = i.LibraryRatio,
+                        ProfitTotal = i.ProfitTotal,
                     }).ToList(),
 
                 });
@@ -125,6 +135,7 @@ namespace BookShop.Controllers
                     Description = entity.Description,
                     PublishedDate = entity.PublishedDate,
                     Cover = entity.Cover,
+                    LibraryRatio = entity.LibraryRatio,
                     CreateDate = entity.CreateDate,
                     Categories = entity.BookCategories.Select(i => new BookCategoryModel
                     {
@@ -147,7 +158,7 @@ namespace BookShop.Controllers
                         TotalCostPrice = i.CostPrice * i.BookCount,
                         SellPrice = i.SellPrice,
                         TotalSellPrice = i.SellPrice * i.BookCount,
-                        LibraryRatio = i.LibraryRatio,
+                        ProfitTotal = i.ProfitTotal,
                     }).ToList(),
 
                 });
@@ -215,13 +226,17 @@ namespace BookShop.Controllers
                     throw new Exception("Reauested Book Not Found!.");
 
                 //Where
-                Expression<Func<Book, bool>> filter = i => i.Id == model.Id;
+                Expression<Func<BookCategory, bool>> filter_BookCategory = i => i.BookId == model.Id;
+                Expression<Func<BookAuthor, bool>> filter_BookAuthor = i => i.BookId == model.Id;
+
+                await _bookCategoryRepository.DeleteRangeAsync(filter_BookCategory);
+                await _bookAuthorRepository.DeleteRangeAsync(filter_BookAuthor);
 
                 //Include.
-                static IIncludableQueryable<Book, object> include(IQueryable<Book> query) => query
-                    .Include(i => i.BookAuthors)
-                    .Include(i => i.BookCategories)
-                    .Include(i => i.BookVersions);
+                IIncludableQueryable<Book, object> include(IQueryable<Book> query) => query
+                   .Include(i => i.BookAuthors)
+                   .Include(i => i.BookCategories)
+                   .Include(i => i.BookVersions);
 
                 void action(Book book)
                 {
@@ -229,20 +244,19 @@ namespace BookShop.Controllers
                     book.Description = model.Description;
                     book.PublishedDate = model.PublishedDate;
                     book.Cover = model.Cover;
-
-                    book.BookCategories = model.CategoriesId.Select(i=>new BookCategory
+                    book.LibraryRatio = model.LibraryRatio;
+                    book.BookCategories = model.CategoriesId.Select(categoryId => new BookCategory
                     {
-                        CategoryId = i
+                        CategoryId = categoryId,
                     }).ToList();
 
-                    //book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
-                    //{
-                    //    AuthorId = i.AuthorId,
-                    //    AuhorRatio = i.AuhorRatio,
-                    //}).ToList();
+                    book.BookAuthors = model.BookAuthors.Select(i => new BookAuthor
+                    {
+                        AuthorId = i.AuthorId,
+                        AuhorRatio = i.AuhorRatio,
+                    }).ToList();
                 }
-
-                await _bookRepository.UpdateAsync(action, filter, include);
+                await _bookRepository.UpdateAsync(action, i => i.Id == model.Id, include);
 
                 return Ok();
             }

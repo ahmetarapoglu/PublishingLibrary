@@ -9,13 +9,13 @@ namespace BookShop.Models.RequestModels
         public int Current { get; set; }
         [DefaultValue(100)]
         public int PageSize { get; set; }
-        [DefaultValue("")]
+        [DefaultValue(null)]
         public string? Search { get; set; }
         [DefaultValue("id")]
         public string? Order { get; set; }
         [DefaultValue("ascend")]
         public string? SortDir { get; set; }
-        public DateTime? StartDate { get; set; }
+        public DateTime? StartDate { get; set; } 
         public DateTime? EndDate { get; set; }
 
 

@@ -50,6 +50,7 @@ namespace BookShop.Controllers
                 {
                     "id" => i => i.Id,
                     "branchName" => i => i.BranchName,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 
@@ -173,7 +174,7 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (model.Id == 0 || model.Id == null)
+                if (model.Id == 0 || model?.Id == null)
                     throw new Exception("Reauested Author Not Found!.");
 
                 //Where

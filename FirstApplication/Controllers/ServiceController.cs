@@ -43,36 +43,36 @@ namespace BookShop.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> UploadFile(IFormFile file)
-        {
+        //[HttpPost]
+        //[Route("[action]")]
+        //public async Task<IActionResult> UploadFile(IFormFile file)
+        //{
 
-            try
-            {
-                string filename = "";
+        //    try
+        //    {
+        //        string filename = "";
 
-                var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
-                filename = DateTime.Now.Ticks.ToString() + extension;
+        //        var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
+        //        filename = DateTime.Now.Ticks.ToString() + extension;
 
-                var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files");
+        //        var filepath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files");
 
-                FileExtensions.CreateDirectory(filepath);
+        //        FileExtensions.CreateDirectory(filepath);
 
-                var exactpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files", filename);
+        //        var exactpath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Upload/Files", filename);
 
-                using (var stream = new FileStream(exactpath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
+        //        using (var stream = new FileStream(exactpath, FileMode.Create))
+        //        {
+        //            await file.CopyToAsync(stream);
+        //        }
 
-                return Ok(filename);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        return Ok(filename);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpPost]
         [Route("[action]")]

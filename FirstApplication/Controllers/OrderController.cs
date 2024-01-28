@@ -54,6 +54,7 @@ namespace BookShop.Controllers
                 {
                     "id" => i => i.Id,
                     "bookCount" => i => i.BookCount,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 
@@ -170,7 +171,7 @@ namespace BookShop.Controllers
         {
             try
             {
-                if (model.Id < 0 || model.Id == null)
+                if (model.Id < 0 || model?.Id == null)
                     throw new Exception("Reauested Order Not Found!.");
 
                 //Where

@@ -5,7 +5,6 @@ namespace BookShop.Entities
 {
     public class BookAuthor
     {
-        public int Id { get; set; }
         public int AuhorRatio { get; set; }
 
         public int AuthorId { get; set; }

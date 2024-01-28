@@ -1,8 +1,6 @@
 ﻿using BookShop.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using static BookShop.Entities.Invoice;
-using static BookShop.Entities.Order;
 
 namespace BookShop.Db
 {
@@ -15,6 +13,7 @@ namespace BookShop.Db
 
         public DbSet<Book> Books { get; set; }
         public DbSet<BookAuthor> BookAuthors { get; set; }
+        public DbSet<BookCategory> BookCategories { get; set; }
         public DbSet<BookVersion> VersionBooks { get; set; }
         public DbSet<Branch> Branches { get; set; }
         public DbSet<BranchPayment> BranchPayments { get; set; }

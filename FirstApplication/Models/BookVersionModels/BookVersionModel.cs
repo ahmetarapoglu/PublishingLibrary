@@ -11,7 +11,5 @@ namespace BookShop.Models.BookVersionModels
         public decimal CostPrice { get; set; }
         [Required(ErrorMessage = "SellPrice is required")]
         public decimal SellPrice { get; set; }
-        [Required(ErrorMessage = "LibraryRatio is required")]
-        public int LibraryRatio { get; set; }
     }
 }

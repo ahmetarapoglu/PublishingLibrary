@@ -10,6 +10,7 @@ namespace BookShop.Entities
         public string Description { get; set; }
         public DateTime PublishedDate { get; set; }
         public string Cover { get; set; }
+        public int LibraryRatio { get; set; }
 
 
         public List<BookCategory> BookCategories { get; set; }

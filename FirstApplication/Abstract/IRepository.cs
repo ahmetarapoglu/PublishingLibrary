@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using BookShop.Entities;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 
 namespace BookShop.Abstract
@@ -56,6 +57,5 @@ namespace BookShop.Abstract
         Task DeleteAsync(Expression<Func<TEntity, bool>> filter);
         Task DeleteRangeAsync(List<TEntity> entities);
         Task DeleteRangeAsync(Expression<Func<TEntity, bool>> filter);
-
     }
 }

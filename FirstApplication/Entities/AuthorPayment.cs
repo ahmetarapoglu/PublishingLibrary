@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using BookShop.Services;
 
 namespace BookShop.Entities
 {
-    public class AuthorPayment
+    public class AuthorPayment : BaseEntity
     {
-        public int Id { get; set; }
         public int PaymentNumber { get; set; }
         public decimal Amount { get; set; }
         public DateTime PaidDate { get; set; }

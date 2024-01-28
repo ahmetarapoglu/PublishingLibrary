@@ -4,10 +4,7 @@ using BookShop.Db;
 using BookShop.Entities;
 using BookShop.Middleware;
 using BookShop.Models.EmailSender;
-using BookShop.Models.RequestModels;
 using BookShop.Seed;
-using BookShop.Validations.ReqValidation;
-using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +19,10 @@ var service = builder.Services;
 
 // 1. DbContext
 service.AddDbContext<AppDbContext>();
+//service.AddDbContext<AppDbContext>(options =>
+//{
+//    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+//});
 
 #endregion
 
@@ -80,18 +81,24 @@ service.AddAuthentication(options =>
 
 #endregion
 
-#region Scoped
+#region DependencyInjection
+service.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+service.AddScoped(typeof(IAccountRepository<>), typeof(AccountRepository<>));
 
-service.AddScoped<IRepository<Category>, GenericRepository<Category>>();
-service.AddScoped<IRepository<Author>, GenericRepository<Author>>();
-service.AddScoped<IRepository<Book>, GenericRepository<Book>>();
-service.AddScoped<IRepository<Branch>, GenericRepository<Branch>>();
-service.AddScoped<IRepository<Invoice>, GenericRepository<Invoice>>();
-service.AddScoped<IRepository<Order>, GenericRepository<Order>>();
-service.AddScoped<IRepository<User>, GenericRepository<User>>();
-service.AddScoped<IRepository<BookVersion>, GenericRepository<BookVersion>>();
+//service.AddScoped<IRepository<Category>, GenericRepository<Category>>();
+//service.AddScoped<IRepository<Author>, GenericRepository<Author>>();
+//service.AddScoped<IRepository<BookAuthor>, GenericRepository<BookAuthor>>();
+//service.AddScoped<IRepository<Book>, GenericRepository<Book>>();
+//service.AddScoped<IRepository<BookCategory>, GenericRepository<BookCategory>>();
+//service.AddScoped<IRepository<Branch>, GenericRepository<Branch>>();
+//service.AddScoped<IRepository<Invoice>, GenericRepository<Invoice>>();
+//service.AddScoped<IRepository<Order>, GenericRepository<Order>>();
+//service.AddScoped<IRepository<User>, GenericRepository<User>>();
+//service.AddScoped<IRepository<Role>, GenericRepository<Role>>();
+//service.AddScoped<IRepository<UserRole>, GenericRepository<UserRole>>();
+//service.AddScoped<IRepository<BookVersion>, GenericRepository<BookVersion>>();
 
-service.AddScoped<IAccountRepository<User>, AccountRepository<User>>();
+//service.AddScoped<IAccountRepository<User>, AccountRepository<User>>();
 
 #endregion
 
@@ -156,8 +163,8 @@ service.AddCors(options =>
         b =>
         {
             b
-                //.WithOrigins("https://nextauth-sage.vercel.app")
-                //.WithOrigins("https://bookshop-theta.vercel.app")
+                .AllowAnyOrigin()
+                //.WithOrigins("https://bookshop-theta.vercel.app/")
                 .WithOrigins("http://localhost:3000")
                 .AllowAnyHeader()
                 .AllowCredentials()
@@ -172,12 +179,15 @@ service.AddCors(options =>
 var app = builder.Build();
 
 //Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    await DbInitializer.InitializerAsync(app);
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    await DbInitializer.InitializerAsync(app);
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+await DbInitializer.InitializerAsync(app);
+app.UseSwagger();
+app.UseSwaggerUI();
 
 //7.Use CORS
 app.UseCors("AllowAngularDevClient");

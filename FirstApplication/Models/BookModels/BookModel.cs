@@ -9,6 +9,7 @@ namespace BookShop.Models.BookModels
         [DataType(DataType.DateTime)]
         public DateTime PublishedDate { get; set; }
         public string Cover { get; set; }
+        public int LibraryRatio { get; set; }
         public List<AuthorInBookModel> BookAuthors { get; set; }
     }
 }

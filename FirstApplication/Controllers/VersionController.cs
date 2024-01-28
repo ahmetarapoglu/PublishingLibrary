@@ -9,6 +9,7 @@ using BookShop.Models.RequestModels;
 using BookShop.Services;
 using BookShop.Validations.ReqValidation;
 using LinqKit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -18,6 +19,7 @@ namespace BookShop.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class VersionController : ControllerBase
     {
         private readonly IRepository<BookVersion> _versionRepository;
@@ -58,6 +60,7 @@ namespace BookShop.Controllers
                 {
                     "id" => i => i.Id,
                     "number" => i => i.Number,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 
@@ -72,14 +75,14 @@ namespace BookShop.Controllers
                     .Select(entity => new BookVersionRModel
                     {
                         Id = entity.Id,
-                        BookCount = entity.BookCount,
                         Number = entity.Number,
+                        BookCount = entity.BookCount,
                         CostPrice = entity.CostPrice,
                         TotalCostPrice = entity.CostPrice * entity.BookCount,
                         SellPrice = entity.SellPrice,
                         TotalSellPrice = entity.SellPrice * entity.BookCount,
-                        LibraryRatio = entity.LibraryRatio,
-                    });
+                        ProfitTotal = entity.ProfitTotal,
+                    }); ;
 
                 var (total, data) = await _versionRepository.GetListAndTotalAsync(select, filter, null, orderBy, skip: model.Skip, take: model.Take);
 
@@ -108,16 +111,15 @@ namespace BookShop.Controllers
                 static IQueryable<BookVersionRModel> select(IQueryable<BookVersion> query) => query
                     .Select(entity => new BookVersionRModel
                 {
-                    Id = entity.Id,
-                    BookCount = entity.BookCount,
-                    Number = entity.Number,
-                    CostPrice = entity.CostPrice,
-                    TotalCostPrice = entity.CostPrice * entity.BookCount,
-                    SellPrice = entity.SellPrice,
-                    TotalSellPrice = entity.SellPrice * entity.BookCount,
-                    LibraryRatio = entity.LibraryRatio,
-
-                });
+                        Id = entity.Id,
+                        BookCount = entity.BookCount,
+                        Number = entity.Number,
+                        CostPrice = entity.CostPrice,
+                        TotalCostPrice = entity.CostPrice * entity.BookCount,
+                        SellPrice = entity.SellPrice,
+                        TotalSellPrice = entity.SellPrice * entity.BookCount,
+                        ProfitTotal = entity.ProfitTotal,
+                    });
 
                 var version = await _versionRepository.FindAsync(select, filter);
 
@@ -155,7 +157,7 @@ namespace BookShop.Controllers
                     BookCount = model.BookCount,
                     CostPrice = model.CostPrice,
                     SellPrice = model.SellPrice,
-                    LibraryRatio = model.LibraryRatio,
+                    ProfitTotal = (model.BookCount * model.SellPrice) - (model.BookCount * model.CostPrice),
                     CreateDate = DateTime.Now,
                 };
 
@@ -180,18 +182,18 @@ namespace BookShop.Controllers
 
             try
             {
-                if (model.Id < 0 || model.Id == null)
+                if (model.Id < 0 || model?.Id == null)
                     throw new Exception("Reauested Version Not Found!.");
 
-                //Where
-                Expression<Func<BookVersion, bool>> filter = i => i.Id == model.Id;
+                void action(BookVersion entity)
+                {
+                    entity!.BookCount = model.BookCount;
+                    entity.CostPrice = model.CostPrice;
+                    entity.SellPrice = model.SellPrice;
+                    entity.ProfitTotal = (model.BookCount * model.SellPrice) - (model.BookCount * model.CostPrice);
+                }
 
-                var entity = await _versionRepository.FindAsync(filter);
-
-                entity!.BookCount = model.BookCount;
-                entity.CostPrice = model.CostPrice;
-                entity.SellPrice = model.SellPrice;
-                entity.LibraryRatio = model.LibraryRatio;
+                await _versionRepository.UpdateAsync(action, i => i.Id == model.Id);
 
                 return Ok();
             }

@@ -52,7 +52,7 @@ namespace BookShop.Controllers
                 Expression<Func<Invoice, object>> Order = model.Order switch
                 {
                     "id" => i => i.Id,
-                    "createDate" => i => i.CreateDate,
+                    "date" => i => i.CreateDate,
                     _ => i => i.Id,
                 };
 
@@ -66,6 +66,7 @@ namespace BookShop.Controllers
                 static IQueryable<InvoiceRModel> select(IQueryable<Invoice> query) => query.Select(entity => new InvoiceRModel
                 {
                     Id = entity.Id,
+                    CreateDate = entity.CreateDate,
                     Order = new OrderRModel
                     {
                         Id = entity.Id,
@@ -75,6 +76,7 @@ namespace BookShop.Controllers
                         BranchName = entity.Order.Branch.BranchName,
                         BookCount = entity.Order.BookCount,
                         Number = entity.Order.BookVersion.Number,
+                        CreateDate = entity.Order.CreateDate,
                         Total = entity.Order.BookVersion.SellPrice * entity.Order.BookCount,
                         profitTotal = (entity.Order.BookVersion.SellPrice - entity.Order.BookVersion.CostPrice) * entity.Order.BookCount,
                         IsInvoiced = entity.Order.IsInvoiced,
@@ -108,6 +110,7 @@ namespace BookShop.Controllers
                 static IQueryable<InvoiceRModel> select(IQueryable<Invoice> query) => query.Select(entity => new InvoiceRModel
                 {
                     Id = entity.Id,
+                    CreateDate = entity.CreateDate,
                     Order = new OrderRModel
                     {
                         Id = entity.Id,
@@ -117,6 +120,7 @@ namespace BookShop.Controllers
                         BranchName = entity.Order.Branch.BranchName,
                         BookCount = entity.Order.BookCount,
                         Number = entity.Order.BookVersion.Number,
+                        CreateDate = entity.Order.CreateDate,
                         Total = entity.Order.BookVersion.SellPrice * entity.Order.BookCount,
                         profitTotal = (entity.Order.BookVersion.SellPrice - entity.Order.BookVersion.CostPrice) * entity.Order.BookCount,
                         IsInvoiced = entity.Order.IsInvoiced,
@@ -152,11 +156,13 @@ namespace BookShop.Controllers
                     order.BookVersionId = model.BookVersionId;
                     order.BookCount = model.BookCount;
                     order.IsInvoiced = true;
+                    order.CreateDate = DateTime.Now;
                 }
 
                 var entity = new Invoice
                 {
                     OrderId = model.OrderId,
+                    CreateDate = DateTime.Now
                 };
 
                 await _orderRepository.UpdateAsync(action, filter);
@@ -181,7 +187,7 @@ namespace BookShop.Controllers
         //    try
         //    {
 
-        //        if (model.Id < 0 || model.Id == null)
+        //        if (model.Id < 0 || model?.Id == null)
         //            throw new Exception("Reauested Order Not Found!.");
 
         //        //Where
@@ -194,12 +200,14 @@ namespace BookShop.Controllers
 
         //        if (entity!.Order.IsInvoiced)
         //        {
-        //            entity.Order.BookVersionId = model.BookVersionId;
-        //            entity.Order.BookCount = model.BookCount;
-        //            entity.Order.IsInvoiced = true;
-        //        }
+        //            void action(Invoice entity)
+        //            {
+        //                entity.Order.BookVersionId = model.BookVersionId;
+        //                entity.Order.BookCount = model.BookCount;
+        //            }
 
-        //        await _invoiceRepository.UpdateAsync(entity);
+        //            await _invoiceRepository.UpdateAsync(action, i => i.Id == model.Id, include);
+        //        }
 
         //        return Ok();
         //    }
